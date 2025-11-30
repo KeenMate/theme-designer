@@ -118,6 +118,7 @@
             placeholder="Select frameworks..."
             enable-search="true"
             multiple="true"
+            enable-badge-tooltips="true"
           ></web-multiselect>
         </div>
 
@@ -145,6 +146,7 @@
             enable-search="true"
             multiple="true"
             badges-display-mode="count"
+            enable-badge-tooltips="true"
           ></web-multiselect>
         </div>
 
@@ -159,6 +161,7 @@
             enable-search="true"
             multiple="true"
             badges-display-mode="compact"
+            enable-badge-tooltips="true"
           ></web-multiselect>
         </div>
 
@@ -173,6 +176,7 @@
             enable-search="true"
             multiple="true"
             show-counter="true"
+            enable-badge-tooltips="true"
           ></web-multiselect>
         </div>
 
@@ -187,6 +191,7 @@
             enable-search="true"
             multiple="true"
             show-checkboxes="true"
+            enable-badge-tooltips="true"
           ></web-multiselect>
         </div>
 
@@ -202,6 +207,7 @@
             multiple="true"
             show-select-all="true"
             show-checkboxes="true"
+            enable-badge-tooltips="true"
           ></web-multiselect>
         </div>
 
@@ -215,6 +221,7 @@
             placeholder="Select by category..."
             enable-search="true"
             multiple="true"
+            enable-badge-tooltips="true"
           ></web-multiselect>
         </div>
 
@@ -227,6 +234,7 @@
             bind:this={disabledEl}
             placeholder="Disabled..."
             multiple="true"
+            enable-badge-tooltips="true"
             disabled
           ></web-multiselect>
         </div>
