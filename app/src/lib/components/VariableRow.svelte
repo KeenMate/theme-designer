@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { isValidHex, normalizeHex } from '@keenmate/theme-generator';
+  import { isValidHex, normalizeHex } from '@keenmate/theme-designer';
   import { extractColor, isColorVariable } from '$lib/variableGroups';
 
   interface Props {

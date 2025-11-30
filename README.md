@@ -1,17 +1,30 @@
-# @keenmate/theme-generator
+# @keenmate/theme-designer
 
 Generate CSS variable themes for KeenMate web components from just 3 base colors.
+
+## Theme Designer App
+
+Design your themes visually with the interactive Theme Designer app:
+
+**[theme-designer.keenmate.dev](https://theme-designer.keenmate.dev)**
+
+Features:
+- Live preview with actual components
+- Real-time CSS variable editing with color pickers
+- Lock/unlock individual variables to preserve custom values
+- Import/export themes in CSS, JSON, and SCSS formats
+- Support for both standalone and cascading (base layer) export modes
 
 ## Installation
 
 ```bash
-npm install @keenmate/theme-generator
+npm install @keenmate/theme-designer
 ```
 
 ## Quick Start
 
 ```typescript
-import { generateTheme, applyTheme } from '@keenmate/theme-generator';
+import { generateTheme, applyTheme } from '@keenmate/theme-designer';
 
 // Generate a dark theme
 const darkTheme = generateTheme('web-multiselect', {
@@ -28,7 +41,7 @@ applyTheme(element, darkTheme);
 ## Supported Components
 
 - `web-multiselect` - [@keenmate/web-multiselect](https://www.npmjs.com/package/@keenmate/web-multiselect)
-- `web-daterangepicker` - Coming soon
+- `web-daterangepicker` - [@keenmate/web-daterangepicker](https://www.npmjs.com/package/@keenmate/web-daterangepicker)
 
 ## API
 
@@ -44,6 +57,34 @@ const theme = generateTheme('web-multiselect', {
 });
 ```
 
+### `generateFullTheme(component, input)`
+
+Generate a cascading theme with base layer and component layer.
+
+```typescript
+const fullTheme = generateFullTheme('web-multiselect', {
+  background: '#ffffff',
+  text: '#111827',
+  accent: '#3b82f6'
+});
+
+// Returns: { base: {...}, component: {...} }
+```
+
+### `generateBaseTheme(input)`
+
+Generate only the base layer variables (shared across components).
+
+```typescript
+const baseTheme = generateBaseTheme({
+  background: '#ffffff',
+  text: '#111827',
+  accent: '#3b82f6'
+});
+
+// Returns: { '--base-primary-bg': '#ffffff', '--base-text-primary': '#111827', ... }
+```
+
 ### Output Formatters
 
 #### `toCSS(theme, selector?)`
@@ -51,7 +92,7 @@ const theme = generateTheme('web-multiselect', {
 Convert to CSS string:
 
 ```typescript
-import { generateTheme, toCSS } from '@keenmate/theme-generator';
+import { generateTheme, toCSS } from '@keenmate/theme-designer';
 
 const theme = generateTheme('web-multiselect', { ... });
 const css = toCSS(theme, '.dark-theme');
@@ -141,7 +182,7 @@ import {
   isDark,
   isLight,
   getLightness,
-} from '@keenmate/theme-generator';
+} from '@keenmate/theme-designer';
 ```
 
 ### Examples
@@ -201,6 +242,29 @@ const neonTheme = generateTheme('web-multiselect', {
 });
 ```
 
+## CSS Variable Layers
+
+The Theme Designer supports a cascading architecture with two layers:
+
+### Base Layer (`--base-*`)
+Shared variables that provide consistent theming across all components:
+- `--base-primary-bg` - Primary background color
+- `--base-text-primary` - Primary text color
+- `--base-accent-color` - Accent/brand color
+- And more...
+
+### Component Layer (`--ms-*`, `--drp-*`)
+Component-specific variables that reference base layer variables:
+```css
+--ms-input-bg: var(--base-primary-bg);
+--ms-accent-color: var(--base-accent-color);
+```
+
+This allows you to:
+1. Change the base colors once and all components update
+2. Override specific component variables when needed
+3. Mix standalone and cascading exports as needed
+
 ## How It Works
 
 The generator uses HSL color math to derive all necessary color variations from your 3 base colors:
@@ -210,6 +274,22 @@ The generator uses HSL color math to derive all necessary color variations from 
 3. **Text variations**: Muted text is mixed between primary text and background
 4. **Accent variations**: Transparent overlays, hover states, and contrast text are all calculated
 5. **Contrast detection**: Automatically determines if white or black text should be used on colored backgrounds (WCAG compliant)
+
+## Development
+
+```bash
+# Install dependencies
+make install
+
+# Start development server
+make dev
+
+# Build library and app
+make build
+
+# Build and run Docker container
+make docker-deploy
+```
 
 ## License
 

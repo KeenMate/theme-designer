@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { theme, colors } from '$lib/stores/theme';
-  import { applyTheme } from '@keenmate/theme-generator';
+  import { applyTheme } from '@keenmate/theme-designer';
 
   type MultiselectElement = HTMLElement & {
     options?: unknown[];

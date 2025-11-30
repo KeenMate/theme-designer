@@ -17,7 +17,7 @@ COPY --from=lib-builder /lib/*.tgz ./
 
 # Modify package.json to use the tarball instead of file references
 WORKDIR /workspace/app
-RUN sed -i 's|"@keenmate/theme-generator": "file:../"|"@keenmate/theme-generator": "file:../keenmate-theme-generator-1.0.0.tgz"|g' package.json && \
+RUN sed -i 's|"@keenmate/theme-designer": "file:../"|"@keenmate/theme-designer": "file:../keenmate-theme-designer-1.0.0.tgz"|g' package.json && \
     sed -i 's|"@keenmate/web-multiselect": "file:../../web-multiselect"|"@keenmate/web-multiselect": "latest"|g' package.json
 
 # Install dependencies and build

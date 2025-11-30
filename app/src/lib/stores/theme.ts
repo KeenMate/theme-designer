@@ -8,8 +8,8 @@ import {
   toFullCSS,
   generateBaseTheme,
   COMPONENT_PREFIXES,
-} from '@keenmate/theme-generator';
-import type { ThemeInput, ComponentType, GeneratedTheme } from '@keenmate/theme-generator';
+} from '@keenmate/theme-designer';
+import type { ThemeInput, ComponentType, GeneratedTheme } from '@keenmate/theme-designer';
 
 // All valid CSS variable prefixes we support
 const VALID_PREFIXES = ['--ms-', '--drp-', '--base-'];

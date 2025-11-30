@@ -1,6 +1,6 @@
 <script lang="ts">
   import { cssOutput, jsonOutput, scssOutput, importFromString, resetOverrides, cascadingMode, selectedComponent } from '$lib/stores/theme';
-  import { COMPONENT_PREFIXES } from '@keenmate/theme-generator';
+  import { COMPONENT_PREFIXES } from '@keenmate/theme-designer';
 
   type Format = 'css' | 'json' | 'scss';
   let activeTab: Format = $state('css');

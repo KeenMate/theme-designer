@@ -1,5 +1,5 @@
 {
-  "name": "theme-generator-demo",
+  "name": "theme-designer",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
-    "@keenmate/theme-generator": "file:../",
+    "@keenmate/theme-designer": "file:../",
     "@keenmate/web-multiselect": "file:../../web-multiselect"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { selectedComponent, resetOverrides } from '$lib/stores/theme';
-  import type { ComponentType } from '@keenmate/theme-generator';
+  import type { ComponentType } from '@keenmate/theme-designer';
 
   const components: { id: ComponentType; name: string; available: boolean }[] = [
     { id: 'web-multiselect', name: 'Web Multiselect', available: true },

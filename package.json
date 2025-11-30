@@ -1,5 +1,5 @@
 {
-  "name": "@keenmate/theme-generator",
+  "name": "@keenmate/theme-designer",
   "version": "1.0.0",
   "description": "Generate CSS variable themes for KeenMate web components",
   "type": "module",
@@ -33,7 +33,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/keenmate/theme-generator.git"
+    "url": "https://github.com/keenmate/theme-designer.git"
   },
   "devDependencies": {
     "typescript": "^5.3.0",

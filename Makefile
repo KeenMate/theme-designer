@@ -1,11 +1,11 @@
-# Theme Generator - Makefile
-# Development and build commands for the theme generator project
+# Theme Designer - Makefile
+# Development and build commands for the theme designer project
 
 # === Configuration ===
 # Docker image settings
-DOCKER_IMAGE_NAME = registry.km8.es/theme-generator
+DOCKER_IMAGE_NAME = registry.km8.es/theme-designer
 DOCKER_TAG = production
-DOCKER_CONTAINER_NAME = theme-generator
+DOCKER_CONTAINER_NAME = theme-designer
 DOCKER_PORT = 8080
 
 # Development settings
@@ -22,7 +22,7 @@ APP_NODE_MODULES = app/node_modules
 
 # Default target
 help: ## Show this help message
-	@echo "Theme Generator - Available Commands:"
+	@echo "Theme Designer - Available Commands:"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
@@ -142,7 +142,7 @@ fresh-start: clean install dev ## Clean setup and start development
 
 # Information
 status: ## Show project status
-	@echo "Theme Generator Status:"
+	@echo "Theme Designer Status:"
 	@echo "Node version: $(shell node --version)"
 	@echo "NPM version: $(shell npm --version)"
 	@echo "Project directory: $(shell pwd)"

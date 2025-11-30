@@ -3,7 +3,7 @@
  * Organized by component section for easier navigation
  */
 
-import type { ComponentType } from '@keenmate/theme-generator';
+import type { ComponentType } from '@keenmate/theme-designer';
 
 export interface VariableGroup {
   name: string;
