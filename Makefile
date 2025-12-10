@@ -85,7 +85,7 @@ clean-all: clean ## Clean everything including node_modules
 # Docker commands
 docker-build: ## Build Docker image
 	@echo "Building Docker image: $(DOCKER_IMAGE_NAME):$(DOCKER_TAG)"
-	docker build -t $(DOCKER_IMAGE_NAME):$(DOCKER_TAG) .
+	docker build -t $(DOCKER_IMAGE_NAME):$(DOCKER_TAG) --progress plain --no-cache .
 	@echo "Docker image built successfully!"
 
 docker-run: ## Run Docker container

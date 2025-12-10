@@ -15,13 +15,17 @@ COPY app ./app
 # Copy the packed library tarball
 COPY --from=lib-builder /lib/*.tgz ./
 
-# Modify package.json to use the tarball instead of file references
+# Modify package.json to use the tarball for local theme-designer library
 WORKDIR /workspace/app
-RUN sed -i 's|"@keenmate/theme-designer": "file:../"|"@keenmate/theme-designer": "file:../keenmate-theme-designer-1.0.0.tgz"|g' package.json && \
-    sed -i 's|"@keenmate/web-multiselect": "file:../../web-multiselect"|"@keenmate/web-multiselect": "latest"|g' package.json
+RUN sed -i 's|"@keenmate/theme-designer": "file:../"|"@keenmate/theme-designer": "file:../keenmate-theme-designer-1.0.0.tgz"|g' package.json
+
+# Remove package-lock.json to force fresh resolution (node_modules excluded via .dockerignore)
+# RUN rm -f package-lock.json
 
 # Install dependencies and build
-RUN npm install && npm run build
+RUN npm ci
+RUN npm ls --depth=0
+RUN npm run build
 
 # Stage 3: Serve with nginx
 FROM nginx:alpine
