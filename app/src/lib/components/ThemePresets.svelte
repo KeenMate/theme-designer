@@ -1,9 +1,25 @@
 <script lang="ts">
   import { presets } from '$lib/presets';
-  import { colors, setColors } from '$lib/stores/theme';
+  import { colors, setColors, resetOverrides, overrides, locked } from '$lib/stores/theme';
 
   function selectPreset(preset: typeof presets[0]) {
+    // Reset any existing overrides first
+    resetOverrides();
+
+    // Set the base colors
     setColors(preset.colors);
+
+    // Apply preset overrides if any (locked so they persist through color changes)
+    if (preset.overrides) {
+      for (const [varName, value] of Object.entries(preset.overrides)) {
+        overrides.update((o) => ({ ...o, [varName]: value }));
+        locked.update((l) => {
+          const newLocked = new Set(l);
+          newLocked.add(varName);
+          return newLocked;
+        });
+      }
+    }
   }
 
   function isActive(preset: typeof presets[0], current: typeof $colors): boolean {

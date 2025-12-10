@@ -247,23 +247,100 @@ const neonTheme = generateTheme('web-multiselect', {
 The Theme Designer supports a cascading architecture with two layers:
 
 ### Base Layer (`--base-*`)
-Shared variables that provide consistent theming across all components:
-- `--base-primary-bg` - Primary background color
-- `--base-text-primary` - Primary text color
-- `--base-accent-color` - Accent/brand color
-- And more...
+
+Shared variables derived from your 3 input colors. These provide consistent theming across all KeenMate components.
+
+#### Base Variable Reference
+
+| Variable | Derived From | Design Purpose | Typical Usage |
+|----------|--------------|----------------|---------------|
+| **Accent Colors** |
+| `--base-accent-color` | `accent` input | Primary brand/action color | Selected states, focus rings, primary buttons |
+| `--base-accent-color-hover` | accent ±10% lightness | Interactive feedback | Hover state on accent elements |
+| `--base-accent-color-active` | accent ±15% lightness | Press feedback | Active/pressed state on accent elements |
+| **Background Colors** |
+| `--base-primary-bg` | `background` input | Main surface color | Input fields, dropdowns, containers |
+| `--base-primary-bg-hover` | background ±5-8% lightness | Subtle highlight | Row hover, option hover |
+| **Text Colors** |
+| `--base-text-color-1` | `text` input (100%) | Primary text | Headers, labels, main content |
+| `--base-text-color-2` | text 85% mix with bg | Secondary text | Body text, descriptions |
+| `--base-text-color-3` | text 60% mix with bg | Tertiary text | Subtitles, secondary info |
+| `--base-text-color-4` | text 40% mix with bg | Muted text | Placeholders, hints, captions |
+| `--base-text-on-accent` | auto-contrast (black/white) | Legible on accent | Text on selected items, badges |
+| **Border** |
+| `--base-border-color` | background ±12-15% lightness | Element separation | Input borders, dividers |
+| **Input Fields** |
+| `--base-input-background` | `background` input | Input surface | Text inputs, selects |
+| `--base-input-color` | text-color-1 | Input text | User-entered text |
+| `--base-input-border` | 1px solid border-color | Default border | Input resting state |
+| `--base-input-border-hover` | border ±10% lightness | Hover hint | Input hover state |
+| `--base-input-border-focus` | 1px solid accent | Focus indicator | Focused input (uses accent) |
+| `--base-input-placeholder-color` | text-color-4 | Placeholder text | Input hints |
+| `--base-input-background-disabled` | text 3-5% alpha | Inactive surface | Disabled inputs |
+| **Dropdown/Popover** |
+| `--base-dropdown-background` | `background` input | Popup surface | Dropdown menus, popovers |
+| `--base-dropdown-border` | 1px solid border-color | Popup border | Dropdown edge |
+| `--base-dropdown-box-shadow` | dark/light adaptive | Depth/elevation | Floating panel shadow |
+| **Tooltip** |
+| `--base-tooltip-background` | dark: bg+20%, light: #333 | Tooltip surface | Help text, badge tooltips |
+| `--base-tooltip-text-color` | auto-contrast | Tooltip text | Tooltip content |
+| **Typography** |
+| `--base-font-family` | system-ui stack (or custom) | Typeface | All component text |
+| `--base-font-size-2xs` to `2xl` | 1.0 to 2.4 multipliers | Size scale | Font size × component rem |
+| `--base-font-weight-*` | 400, 500, 600 | Weight scale | normal, medium, semibold |
+| `--base-line-height-*` | 1.25, 1.5, 1.75 | Line height | tight, normal, relaxed |
+| **Border Radius** |
+| `--base-border-radius-sm` | 0.4 multiplier | Small roundness | Day cells, small buttons |
+| `--base-border-radius-md` | 0.6 multiplier | Medium roundness | Inputs, standard controls |
+| `--base-border-radius-lg` | 0.8 multiplier | Large roundness | Cards, containers |
+| **Input Size Heights** |
+| `--base-input-size-xs-height` | 3.1 multiplier | Extra small input | 31px at 10px rem |
+| `--base-input-size-sm-height` | 3.3 multiplier | Small input | 33px at 10px rem |
+| `--base-input-size-md-height` | 3.5 multiplier | Medium input (default) | 35px at 10px rem |
+| `--base-input-size-lg-height` | 3.8 multiplier | Large input | 38px at 10px rem |
+| `--base-input-size-xl-height` | 4.1 multiplier | Extra large input | 41px at 10px rem |
+
+#### Dark vs Light Theme Behavior
+
+The generator automatically detects dark/light themes using `getLightness(background) < 50`:
+
+| Adjustment | Dark Theme | Light Theme |
+|------------|------------|-------------|
+| Hover backgrounds | Lighten | Darken |
+| Borders | Lighten from bg | Darken from bg |
+| Shadows | Stronger (0.6 alpha) | Softer (0.15 alpha) |
+| Tooltips | Lightened background | Dark (#333) |
 
 ### Component Layer (`--ms-*`, `--drp-*`)
+
 Component-specific variables that reference base layer variables:
+
 ```css
+/* Multiselect references base layer */
 --ms-input-bg: var(--base-primary-bg);
 --ms-accent-color: var(--base-accent-color);
+
+/* Daterangepicker references base layer */
+--drp-primary-bg: var(--base-primary-bg);
+--drp-accent-color: var(--base-accent-color);
 ```
 
 This allows you to:
 1. Change the base colors once and all components update
 2. Override specific component variables when needed
 3. Mix standalone and cascading exports as needed
+
+### Adding Support for New Components
+
+When creating a theme generator for a new component:
+
+1. **Reference base variables** - Map your component's CSS variables to `--base-*` equivalents
+2. **Follow naming conventions** - Use consistent suffixes across components:
+   - `-bg` / `-background` for backgrounds
+   - `-color` for text colors
+   - `-border` for borders
+   - `-hover`, `-active`, `-focus` for states
+3. **Document the mapping** - Add a legend showing which base variables affect which UI elements
 
 ## How It Works
 

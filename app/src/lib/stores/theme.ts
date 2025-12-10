@@ -18,12 +18,16 @@ export interface ColorState extends ThemeInput {
   background: string;
   text: string;
   accent: string;
+  fontFamily?: string;
+  fontImport?: string;
 }
 
 const defaultColors: ColorState = {
   background: '#ffffff',
   text: '#111827',
-  accent: '#3b82f6'
+  accent: '#3b82f6',
+  fontFamily: undefined,
+  fontImport: undefined,
 };
 
 // Base colors store
@@ -86,8 +90,11 @@ export const finalBaseTheme = derived(
 
 // Export formats derived from final theme and cascading mode
 export const cssOutput = derived(
-  [fullTheme, finalTheme, finalBaseTheme, cascadingMode],
-  ([$fullTheme, $finalTheme, $finalBase, $cascading]) => {
+  [fullTheme, finalTheme, finalBaseTheme, cascadingMode, colors],
+  ([$fullTheme, $finalTheme, $finalBase, $cascading, $colors]) => {
+    // Build @import statement if fontImport is set
+    const importStatement = $colors.fontImport ? `${$colors.fontImport}\n\n` : '';
+
     if ($cascading) {
       // In cascading mode, export base layer (with overrides) + component layer with var() refs
       const baseProps = Object.entries($finalBase)
@@ -96,10 +103,10 @@ export const cssOutput = derived(
       const componentProps = Object.entries($fullTheme.component)
         .map(([prop, value]) => `  ${prop}: ${value};`)
         .join('\n');
-      return `/* Base Layer */\n:root {\n${baseProps}\n}\n\n/* Component Layer (references base) */\n:root {\n${componentProps}\n}`;
+      return `${importStatement}/* Base Layer */\n:root {\n${baseProps}\n}\n\n/* Component Layer (references base) */\n:root {\n${componentProps}\n}`;
     }
     // Standalone mode: just the component variables with resolved values
-    return toCSS($finalTheme, ':root');
+    return `${importStatement}${toCSS($finalTheme, ':root')}`;
   }
 );
 
@@ -238,6 +245,31 @@ export function isLocked(varName: string): boolean {
 export function resetOverrides() {
   overrides.set({});
   locked.set(new Set());
+}
+
+/**
+ * Reset only component-specific overrides (--ms-*, --drp-*), preserve --base-* overrides
+ */
+export function resetComponentOverrides() {
+  overrides.update((o) => {
+    const newOverrides: Record<string, string> = {};
+    for (const [key, value] of Object.entries(o)) {
+      if (key.startsWith('--base-')) {
+        newOverrides[key] = value;
+      }
+    }
+    return newOverrides;
+  });
+
+  locked.update((l) => {
+    const newLocked = new Set<string>();
+    for (const key of l) {
+      if (key.startsWith('--base-')) {
+        newLocked.add(key);
+      }
+    }
+    return newLocked;
+  });
 }
 
 /**

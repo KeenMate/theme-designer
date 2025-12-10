@@ -8,6 +8,10 @@ export interface ThemeInput {
   text: string;
   /** Accent/brand color (hex format, e.g., '#667eea') */
   accent: string;
+  /** Font family (optional, defaults to system fonts) */
+  fontFamily?: string;
+  /** Google Fonts @import URL (optional) */
+  fontImport?: string;
 }
 
 /**

@@ -31,8 +31,11 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
   // Border color (derived from background)
   const border = isDark ? lighten(background, 15) : darken(background, 12);
 
-  // Text variations
-  const textMuted = mix(text, background, 60);
+  // Text color levels (FluentUI-style hierarchy)
+  const textLevel1 = text; // Full contrast - headers, titles
+  const textLevel2 = mix(text, background, 85); // Body text, labels
+  const textLevel3 = mix(text, background, 60); // Secondary content, subtitles
+  const textLevel4 = mix(text, background, 40); // Hints, placeholders, captions
   const textOnAccent = contrast(accent);
 
   // Accent variations
@@ -61,9 +64,11 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
     '--base-primary-bg': background,
     '--base-primary-bg-hover': bgHover,
 
-    // Text colors
-    '--base-text-primary': text,
-    '--base-text-secondary': textMuted,
+    // Text color levels (FluentUI-style hierarchy)
+    '--base-text-color-1': textLevel1,
+    '--base-text-color-2': textLevel2,
+    '--base-text-color-3': textLevel3,
+    '--base-text-color-4': textLevel4,
     '--base-text-on-accent': textOnAccent,
 
     // Border
@@ -71,12 +76,11 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
 
     // Input field colors (same as base for most cases)
     '--base-input-background': background,
-    '--base-input-color': text,
-    '--base-input-border-color-hover': isDark
-      ? lighten(border, 10)
-      : darken(border, 10),
-    '--base-input-border-color-focus': accent,
-    '--base-input-placeholder-color': textMuted,
+    '--base-input-color': textLevel1,
+    '--base-input-border': `1px solid ${border}`,
+    '--base-input-border-hover': `1px solid ${isDark ? lighten(border, 10) : darken(border, 10)}`,
+    '--base-input-border-focus': `1px solid ${accent}`,
+    '--base-input-placeholder-color': textLevel4,
     '--base-input-background-disabled': disabledBg,
 
     // Dropdown/popover colors
@@ -86,7 +90,42 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
 
     // Tooltip colors
     '--base-tooltip-background': isDark ? lighten(background, 20) : '#333333',
-    '--base-tooltip-text-color': isDark ? text : '#ffffff',
+    '--base-tooltip-text-color': isDark ? textLevel1 : '#ffffff',
+
+    // Typography - Font Family
+    '--base-font-family': input.fontFamily || 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+
+    // Typography - Font Sizes (unitless multipliers for calc with --*-rem)
+    '--base-font-size-2xs': '1',
+    '--base-font-size-xs': '1.2',
+    '--base-font-size-sm': '1.4',
+    '--base-font-size-base': '1.6',
+    '--base-font-size-lg': '1.8',
+    '--base-font-size-xl': '2',
+    '--base-font-size-2xl': '2.4',
+
+    // Typography - Font Weights
+    '--base-font-weight-normal': '400',
+    '--base-font-weight-medium': '500',
+    '--base-font-weight-semibold': '600',
+
+    // Typography - Line Heights
+    '--base-line-height-tight': '1.25',
+    '--base-line-height-normal': '1.5',
+    '--base-line-height-relaxed': '1.75',
+
+    // Border Radius (unitless multipliers for calc with --*-rem)
+    '--base-border-radius-sm': '0.4',
+    '--base-border-radius-md': '0.6',
+    '--base-border-radius-lg': '0.8',
+
+    // Input Size Heights (unitless multipliers for calc with --*-rem)
+    // Standardized across all KeenMate components for consistent input sizing
+    '--base-input-size-xs-height': '3.1',  // 31px at 10px rem
+    '--base-input-size-sm-height': '3.3',  // 33px at 10px rem
+    '--base-input-size-md-height': '3.5',  // 35px at 10px rem
+    '--base-input-size-lg-height': '3.8',  // 38px at 10px rem
+    '--base-input-size-xl-height': '4.1',  // 41px at 10px rem
   };
 }
 

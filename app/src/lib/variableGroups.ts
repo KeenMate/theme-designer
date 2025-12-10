@@ -107,15 +107,13 @@ export const multiselectGroups: VariableGroup[] = [
     expanded: false,
     variables: [
       '--ms-option-background-selected',
-      '--ms-option-color-selected',
+      '--ms-option-title-color-selected',
+      '--ms-option-title-color-selected-hover',
       '--ms-option-subtitle-color-selected',
-      '--ms-option-bg-selected-hover',
-      '--ms-option-color-selected-hover',
       '--ms-option-subtitle-color-selected-hover',
+      '--ms-option-bg-selected-hover',
       '--ms-option-bg-selected-focused',
-      '--ms-option-color-selected-focused',
       '--ms-option-bg-selected-matched',
-      '--ms-option-color-selected-matched',
     ],
   },
   {
@@ -123,7 +121,6 @@ export const multiselectGroups: VariableGroup[] = [
     expanded: false,
     variables: [
       '--ms-option-bg-disabled-selected',
-      '--ms-option-color-disabled-selected',
     ],
   },
   {
@@ -271,141 +268,29 @@ export const multiselectGroups: VariableGroup[] = [
 // =============================================================================
 
 export const daterangepickerGroups: VariableGroup[] = [
+  // Note: Most --drp-* variables are derived from --base-* in CSS.
+  // Only variables with special computed values are shown here.
+  // To customize colors, use the Base Colors panel which affects all components.
   {
-    name: 'Tier 1 - Global Colors',
+    name: 'Active States',
     expanded: true,
     variables: [
-      '--drp-accent-color',
-      '--drp-accent-color-hover',
-      '--drp-text-primary',
-      '--drp-text-secondary',
-      '--drp-text-on-accent',
-      '--drp-primary-bg',
-      '--drp-primary-bg-hover',
-      '--drp-border-color',
-      '--drp-dropdown-background',
-    ],
-  },
-  {
-    name: 'Tier 1 - Input',
-    expanded: false,
-    variables: [
-      '--drp-input-background',
-      '--drp-input-color',
-      '--drp-input-border-color',
-      '--drp-input-border-color-hover',
-      '--drp-input-border-color-focus',
-      '--drp-input-placeholder-color',
-      '--drp-input-background-disabled',
-    ],
-  },
-  {
-    name: 'Tier 1 - Tooltip',
-    expanded: false,
-    variables: [
-      '--drp-tooltip-background',
-      '--drp-tooltip-text-color',
-    ],
-  },
-  {
-    name: 'Button',
-    expanded: false,
-    variables: [
-      '--drp-button-text-color',
-      '--drp-button-border-color',
-      '--drp-button-bg-hover',
-      '--drp-button-border-hover',
-      '--drp-button-today-color',
-      '--drp-button-clear-color',
-      '--drp-button-cancel-color',
-      '--drp-button-apply-bg',
-      '--drp-button-apply-color',
-      '--drp-button-apply-border',
-      '--drp-button-apply-bg-hover',
-    ],
-  },
-  {
-    name: 'Header & Navigation',
-    expanded: false,
-    variables: [
-      '--drp-header-text-color',
-      '--drp-header-bg-hover',
       '--drp-header-bg-active',
-      '--drp-nav-text-color',
-      '--drp-nav-border-color',
-      '--drp-nav-bg-hover',
       '--drp-nav-bg-active',
-      '--drp-nav-border-hover',
-    ],
-  },
-  {
-    name: 'Rolling Selector',
-    expanded: false,
-    variables: [
-      '--drp-rolling-bg',
-      '--drp-rolling-border-color',
-      '--drp-rolling-scrollbar-thumb',
-      '--drp-rolling-scrollbar-thumb-hover',
-      '--drp-rolling-item-bg-hover',
-      '--drp-rolling-item-bg-selected',
-      '--drp-rolling-item-color-selected',
-      '--drp-rolling-item-bg-selected-hover',
-    ],
-  },
-  {
-    name: 'Day Cells',
-    expanded: false,
-    variables: [
-      '--drp-weekday-color',
-      '--drp-day-text-color',
-      '--drp-day-bg-hover',
-      '--drp-day-border-hover',
-      '--drp-day-today-border',
-      '--drp-day-selected-bg',
-      '--drp-day-selected-color',
-      '--drp-day-selected-bg-hover',
-      '--drp-day-focused-outline',
-      '--drp-day-disabled-color',
-      '--drp-day-other-month-color',
-      '--drp-day-range-bg',
-      '--drp-day-range-color',
-    ],
-  },
-  {
-    name: 'Summary & Actions',
-    expanded: false,
-    variables: [
-      '--drp-summary-text-color',
-      '--drp-summary-border-color',
-      '--drp-summary-count-color',
-    ],
-  },
-  {
-    name: 'Badges',
-    expanded: false,
-    variables: [
-      '--drp-badge-number-bg',
-      '--drp-badge-number-color',
-      '--drp-badge-count-bg',
-      '--drp-badge-count-color',
-      '--drp-badge-text-bg',
-      '--drp-badge-text-color',
-    ],
-  },
-  {
-    name: 'Unified Navigation (Multi-Month)',
-    expanded: false,
-    variables: [
-      '--drp-unified-range-text-color',
-      '--drp-unified-range-bg-hover',
       '--drp-unified-range-bg-active',
-      '--drp-unified-month-color',
-      '--drp-unified-rolling-disabled-color',
+    ],
+  },
+  {
+    name: 'Special Colors',
+    expanded: true,
+    variables: [
+      '--drp-day-other-month-color',
+      '--drp-loading-overlay-background',
     ],
   },
   {
     name: 'Effects',
-    expanded: false,
+    expanded: true,
     variables: [
       '--drp-shadow-xl',
     ],

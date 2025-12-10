@@ -14,7 +14,7 @@
   let isValid = $state(true);
 
   // Ensure color input always has a valid hex (fallback to black)
-  let safeColorValue = $derived(() => {
+  let safeColorValue = $derived.by(() => {
     if (value && isValidHex(value)) {
       return normalizeHex(value);
     }
@@ -74,7 +74,7 @@
     <input
       type="color"
       id={colorInputId}
-      value={safeColorValue()}
+      value={safeColorValue}
       oninput={handleColorInput}
       class="sr-only"
     />
@@ -84,7 +84,7 @@
       value={inputValue}
       oninput={handleTextInput}
       placeholder="#000000"
-      class="flex-1 px-3 py-2 border rounded-lg font-mono text-sm
+      class="flex-1 min-w-0 px-3 py-2 border rounded-lg font-mono text-sm
              bg-white dark:bg-gray-800
              text-gray-900 dark:text-white
              border-gray-300 dark:border-gray-600

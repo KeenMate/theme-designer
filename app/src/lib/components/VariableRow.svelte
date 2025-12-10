@@ -26,7 +26,7 @@
   let displayColor = $derived(extractedColor || '#000000');
 
   // Check if extracted color is a valid hex that can be used with color picker
-  let isValidHexColor = $derived(() => {
+  let isValidHexColor = $derived.by(() => {
     const color = extractedColor;
     if (color && color.startsWith('#') && isValidHex(color)) {
       const normalized = normalizeHex(color);
@@ -37,8 +37,8 @@
   });
 
   // For color input, ensure we have a valid hex (must be #rrggbb format)
-  let safeColorValue = $derived(() => {
-    if (isValidHexColor()) {
+  let safeColorValue = $derived.by(() => {
+    if (isValidHexColor) {
       return normalizeHex(extractedColor!);
     }
     return '#000000';
@@ -70,6 +70,13 @@
     }
   }
 
+  function handleNumberInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    inputValue = target.value;
+    isValid = true;
+    onChange(inputValue);
+  }
+
   function handleColorInput(e: Event) {
     const target = e.target as HTMLInputElement;
     const newColor = target.value;
@@ -91,7 +98,71 @@
   let colorInputId = `color-${varName.replace(/[^a-z0-9]/gi, '-')}`;
 
   // Shorten variable name for display
-  let shortName = $derived(varName.replace('--ms-', ''));
+  let shortName = $derived(varName.replace(/^--(ms|drp|base)-/, ''));
+
+  // Determine input type info based on variable name
+  let inputTypeInfo = $derived.by(() => {
+    const name = varName.toLowerCase();
+
+    // Colors - not numeric
+    if (name.includes('color') || name.includes('-bg') || name.includes('background') ||
+        name.includes('border-color') || name.includes('shadow')) {
+      return { unit: '', isNumeric: false, step: 0 };
+    }
+
+    // Font weights - numeric, step 100
+    if (name.includes('font-weight')) {
+      return { unit: '', isNumeric: true, step: 100 };
+    }
+
+    // Line heights - numeric, step 0.05
+    if (name.includes('line-height')) {
+      return { unit: '', isNumeric: true, step: 0.05 };
+    }
+
+    // Font sizes - numeric coefficients, step 0.1
+    if (name.includes('font-size')) {
+      return { unit: '× rem', isNumeric: true, step: 0.1 };
+    }
+
+    // Border radius - numeric coefficients, step 0.1
+    if (name.includes('border-radius')) {
+      return { unit: '× rem', isNumeric: true, step: 0.1 };
+    }
+
+    // Spacing/padding/margin/gap - numeric coefficients, step 0.1
+    if (name.includes('padding') || name.includes('margin') || name.includes('gap') ||
+        name.includes('spacing') || name.includes('indent')) {
+      return { unit: '× rem', isNumeric: true, step: 0.1 };
+    }
+
+    // Sizes (width, height, min-, max-) - numeric, step 1
+    if (name.includes('width') || name.includes('height') || name.includes('size')) {
+      return { unit: 'px', isNumeric: true, step: 1 };
+    }
+
+    // Transitions - numeric, step 50
+    if (name.includes('transition') || name.includes('duration') || name.includes('delay')) {
+      return { unit: 'ms', isNumeric: true, step: 50 };
+    }
+
+    // Z-index - numeric, step 1
+    if (name.includes('z-index')) {
+      return { unit: '', isNumeric: true, step: 1 };
+    }
+
+    // Opacity - numeric, step 0.05
+    if (name.includes('opacity')) {
+      return { unit: '', isNumeric: true, step: 0.05 };
+    }
+
+    return { unit: '', isNumeric: false, step: 0 };
+  });
+
+  // Convenience accessors
+  let expectedUnit = $derived(inputTypeInfo.unit);
+  let isNumeric = $derived(inputTypeInfo.isNumeric);
+  let step = $derived(inputTypeInfo.step);
 </script>
 
 <div class="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 group">
@@ -108,6 +179,77 @@
     <i class="fa-solid {isLocked ? 'fa-lock' : 'fa-lock-open'}"></i>
   </button>
 
+  <!-- Variable name -->
+  <span
+    class="text-xs font-mono truncate flex-1 min-w-0
+           {isModified ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-gray-600 dark:text-gray-400'}"
+    title={varName}
+  >
+    {shortName}
+  </span>
+
+  <!-- Value input -->
+  {#if isNumeric}
+    <input
+      type="number"
+      value={inputValue}
+      oninput={handleNumberInput}
+      step={step}
+      class="w-28 xl:w-56 flex-shrink-0 px-2 py-1 text-xs font-mono rounded border
+             bg-white dark:bg-gray-800
+             text-gray-900 dark:text-white
+             border-gray-200 dark:border-gray-600
+             focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+             {isModified ? 'border-amber-300 dark:border-amber-600' : ''}"
+    />
+  {:else}
+    <input
+      type="text"
+      value={inputValue}
+      oninput={handleTextInput}
+      class="w-28 xl:w-56 flex-shrink-0 px-2 py-1 text-xs font-mono rounded border
+             bg-white dark:bg-gray-800
+             text-gray-900 dark:text-white
+             border-gray-200 dark:border-gray-600
+             focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+             {!isValid ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
+             {isModified ? 'border-amber-300 dark:border-amber-600' : ''}"
+    />
+  {/if}
+
+  <!-- Color swatch or Unit indicator -->
+  {#if extractedColor && extractedColor !== 'transparent'}
+    <div class="relative flex-shrink-0">
+      <button
+        type="button"
+        onclick={() => isValidHexColor && document.getElementById(colorInputId)?.click()}
+        class="w-12 h-5 rounded border border-gray-300 dark:border-gray-600
+               {isValidHexColor ? 'cursor-pointer hover:scale-105 transition-transform' : 'cursor-default'}"
+        style="background-color: {displayColor}"
+        title={isValidHexColor ? 'Click to change color' : extractedColor}
+      ></button>
+      {#if isValidHexColor}
+        <input
+          type="color"
+          id={colorInputId}
+          value={safeColorValue}
+          oninput={handleColorInput}
+          class="absolute top-0 right-0 w-full h-full opacity-0 cursor-pointer"
+        />
+      {/if}
+    </div>
+  {:else if extractedColor === 'transparent'}
+    <div
+      class="w-12 h-5 rounded border border-gray-300 dark:border-gray-600 flex-shrink-0"
+      style="background: repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 6px 6px"
+      title="Transparent"
+    ></div>
+  {:else}
+    <span class="w-12 flex-shrink-0 text-xs text-gray-400 dark:text-gray-500 font-mono">
+      {expectedUnit}
+    </span>
+  {/if}
+
   <!-- Reset button (only visible when modified) -->
   <button
     type="button"
@@ -120,56 +262,4 @@
   >
     <i class="fa-solid fa-rotate-left"></i>
   </button>
-
-  <!-- Color swatch -->
-  {#if extractedColor && extractedColor !== 'transparent'}
-    <button
-      type="button"
-      onclick={() => isValidHexColor() && document.getElementById(colorInputId)?.click()}
-      class="w-5 h-5 rounded border border-gray-300 dark:border-gray-600 flex-shrink-0
-             {isValidHexColor() ? 'cursor-pointer hover:scale-110 transition-transform' : 'cursor-default'}"
-      style="background-color: {displayColor}"
-      title={isValidHexColor() ? 'Click to change color' : extractedColor}
-    ></button>
-    {#if isValidHexColor()}
-      <input
-        type="color"
-        id={colorInputId}
-        value={safeColorValue()}
-        oninput={handleColorInput}
-        class="sr-only"
-      />
-    {/if}
-  {:else if extractedColor === 'transparent'}
-    <div
-      class="w-5 h-5 rounded border border-gray-300 dark:border-gray-600 flex-shrink-0"
-      style="background: repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 6px 6px"
-      title="Transparent"
-    ></div>
-  {:else}
-    <div class="w-5 h-5 flex-shrink-0"></div>
-  {/if}
-
-  <!-- Variable name -->
-  <span
-    class="text-xs font-mono truncate flex-shrink-0 w-36
-           {isModified ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-gray-600 dark:text-gray-400'}"
-    title={varName}
-  >
-    {shortName}
-  </span>
-
-  <!-- Value input -->
-  <input
-    type="text"
-    value={inputValue}
-    oninput={handleTextInput}
-    class="flex-1 min-w-0 px-2 py-1 text-xs font-mono rounded border
-           bg-white dark:bg-gray-800
-           text-gray-900 dark:text-white
-           border-gray-200 dark:border-gray-600
-           focus:ring-1 focus:ring-blue-500 focus:border-blue-500
-           {!isValid ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
-           {isModified ? 'border-amber-300 dark:border-amber-600' : ''}"
-  />
 </div>

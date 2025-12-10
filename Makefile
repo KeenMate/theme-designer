@@ -1,6 +1,13 @@
 # Theme Designer - Makefile
 # Development and build commands for the theme designer project
 
+# === Shell Configuration ===
+# Use cmd on Windows, sh elsewhere
+ifeq ($(OS),Windows_NT)
+    SHELL := cmd.exe
+    .SHELLFLAGS := /c
+endif
+
 # === Configuration ===
 # Docker image settings
 DOCKER_IMAGE_NAME = registry.km8.es/theme-designer
@@ -29,41 +36,41 @@ help: ## Show this help message
 # Development commands
 install: ## Install all dependencies (library + app)
 	npm install
-	cd app && npm install
+	npm install --prefix app
 
 install-lib: ## Install library dependencies only
 	npm install
 
 install-app: ## Install app dependencies only
-	cd app && npm install
+	npm install --prefix app
 
 dev: ## Start development server
-	cd app && npm run dev
+	npm run dev --prefix app
 
 dev-host: ## Start development server with host access
-	cd app && npm run dev -- --host
+	npm run dev --prefix app -- --host
 
 build: ## Build everything (library + app)
 	npm run build
-	cd app && npm run build
+	npm run build --prefix app
 
 build-lib: ## Build library only
 	npm run build
 
 build-app: ## Build app only
-	cd app && npm run build
+	npm run build --prefix app
 
 preview: ## Preview the production build
-	cd app && npm run preview
+	npm run preview --prefix app
 
 # Quality assurance
 check: ## Run type checking
 	npm run check
-	cd app && npm run check
+	npm run check --prefix app
 
 lint: ## Run linting
 	npm run lint
-	cd app && npm run lint
+	npm run lint --prefix app
 
 # Cleanup
 clean: ## Clean build artifacts

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { selectedComponent, resetOverrides } from '$lib/stores/theme';
+  import { selectedComponent, resetComponentOverrides } from '$lib/stores/theme';
   import type { ComponentType } from '@keenmate/theme-designer';
 
   const components: { id: ComponentType; name: string; available: boolean }[] = [
@@ -8,8 +8,8 @@
   ];
 
   function selectComponent(component: ComponentType) {
-    // Reset overrides when switching components (locked values don't apply across components)
-    resetOverrides();
+    // Reset only component-specific overrides, preserve --base-* overrides
+    resetComponentOverrides();
     selectedComponent.set(component);
   }
 </script>

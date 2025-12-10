@@ -4,6 +4,7 @@ export interface ThemePreset {
   name: string;
   description: string;
   colors: ColorState;
+  overrides?: Record<string, string>;
 }
 
 export const presets: ThemePreset[] = [
@@ -32,6 +33,11 @@ export const presets: ThemePreset[] = [
       background: '#ffffff',
       text: '#333333',
       accent: '#bb0a30'
+    },
+    overrides: {
+      '--base-border-radius-sm': '0',
+      '--base-border-radius-md': '0',
+      '--base-border-radius-lg': '0'
     }
   },
   {
@@ -77,6 +83,15 @@ export const presets: ThemePreset[] = [
       background: '#0f172a',
       text: '#e2e8f0',
       accent: '#8b5cf6'
+    }
+  },
+  {
+    name: 'Monoscope',
+    description: 'Debug test pattern',
+    colors: {
+      background: '#00ff00',  // Bright green - unmistakable
+      text: '#ff0000',        // Pure red - stands out
+      accent: '#0000ff'       // Pure blue - obvious
     }
   }
 ];

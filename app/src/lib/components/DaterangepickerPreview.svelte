@@ -3,94 +3,86 @@
   import { theme, colors, baseTheme } from '$lib/stores/theme';
   import { applyTheme } from '@keenmate/theme-designer';
 
-  type MultiselectElement = HTMLElement & {
-    options?: unknown[];
-    valueMember?: string;
-    displayValueMember?: string;
-    subtitleMember?: string;
-    groupMember?: string;
-    setSelected?: (values: string[]) => void;
+  type DaterangepickerElement = HTMLElement & {
+    value?: string;
+    startDate?: string;
+    endDate?: string;
+    specialDates?: any[];
+    getDateMetadataCallback?: (date: Date) => any;
   };
 
   // Element refs for each example
-  let basicEl: MultiselectElement | undefined = $state();
-  let singleEl: MultiselectElement | undefined = $state();
-  let countEl: MultiselectElement | undefined = $state();
-  let compactEl: MultiselectElement | undefined = $state();
-  let counterEl: MultiselectElement | undefined = $state();
-  let checkboxEl: MultiselectElement | undefined = $state();
-  let actionsEl: MultiselectElement | undefined = $state();
-  let groupedEl: MultiselectElement | undefined = $state();
-  let disabledEl: MultiselectElement | undefined = $state();
+  let singleEl: DaterangepickerElement | undefined = $state();
+  let rangeEl: DaterangepickerElement | undefined = $state();
+  let multiMonthEl: DaterangepickerElement | undefined = $state();
+  let badgesEl: DaterangepickerElement | undefined = $state();
+  let tooltipsEl: DaterangepickerElement | undefined = $state();
+  let manualEl: DaterangepickerElement | undefined = $state();
+  let formatEl: DaterangepickerElement | undefined = $state();
+  let disabledEl: DaterangepickerElement | undefined = $state();
 
   let mounted = $state(false);
 
-  // Sample data with groups and descriptions (for rich content examples)
-  const sampleOptions = [
-    { id: '1', name: 'React', description: 'A JavaScript library for building UIs', group: 'Frontend' },
-    { id: '2', name: 'Vue', description: 'Progressive JavaScript framework', group: 'Frontend' },
-    { id: '3', name: 'Angular', description: 'Platform for web applications', group: 'Frontend', disabled: true },
-    { id: '4', name: 'Svelte', description: 'Cybernetically enhanced web apps', group: 'Frontend' },
-    { id: '5', name: 'Node.js', description: 'JavaScript runtime', group: 'Backend' },
-    { id: '6', name: 'Django', description: 'Python web framework', group: 'Backend', disabled: true },
-    { id: '7', name: 'Rails', description: 'Ruby web framework', group: 'Backend' },
-    { id: '8', name: 'Express', description: 'Node.js web framework', group: 'Backend' },
-  ];
+  // Sample special dates for badges demo
+  function getSpecialDates() {
+    const today = new Date();
+    const dates = [];
 
-  // Simple options without descriptions (for single-line examples)
-  const simpleOptions = [
-    { id: '1', name: 'JavaScript' },
-    { id: '2', name: 'TypeScript' },
-    { id: '3', name: 'Python', disabled: true },
-    { id: '4', name: 'Rust' },
-    { id: '5', name: 'Go' },
-    { id: '6', name: 'Java', disabled: true },
-    { id: '7', name: 'C#' },
-    { id: '8', name: 'Ruby' },
-  ];
+    // Add badges for next 2 weeks
+    for (let i = 0; i < 14; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
 
-  function setupElement(el: MultiselectElement | undefined, options: {
-    withGroup?: boolean;
-    preselect?: string[];
-    simple?: boolean;  // Use simple options without subtitles
-  } = {}) {
-    if (!el) return;
-    el.valueMember = 'id';
-    el.displayValueMember = 'name';
-    (el as any).disabledMember = 'disabled';
-    if (!options.simple) {
-      el.subtitleMember = 'description';
+      // Add different badge types
+      if (i % 3 === 0) {
+        dates.push({
+          date: date.toISOString().split('T')[0],
+          badgeText: '$' + (99 + i * 10),
+          badgeClass: 'badge-number'
+        });
+      } else if (i % 3 === 1) {
+        dates.push({
+          date: date.toISOString().split('T')[0],
+          badgeText: (i + 1).toString(),
+          badgeClass: 'badge-count'
+        });
+      }
     }
-    if (options.withGroup) {
-      el.groupMember = 'group';
+    return dates;
+  }
+
+  // Callback for tooltips demo
+  function getTooltipMetadata(date: Date) {
+    const day = date.getDate();
+    if (day % 5 === 0) {
+      return { dayTooltip: `Special date: ${date.toLocaleDateString()}` };
     }
-    el.options = options.simple ? simpleOptions : sampleOptions;
-    if (options.preselect && el.setSelected) {
-      setTimeout(() => el.setSelected?.(options.preselect!), 10);
+    if (day % 7 === 0) {
+      return { dayTooltip: 'Weekly event' };
     }
+    return null;
   }
 
   onMount(async () => {
     if (typeof window !== 'undefined') {
       try {
-        await import('@keenmate/web-multiselect');
+        await import('@keenmate/web-daterangepicker');
         mounted = true;
 
-        // Wait for next tick to ensure elements are ready
+        // Wait for elements to be ready
         await new Promise(resolve => setTimeout(resolve, 50));
 
-        // Setup all elements - mix of rich (with subtitles) and simple (single-line) options
-        setupElement(basicEl, { preselect: ['1', '2'] });
-        setupElement(singleEl, { simple: true });  // Single-line options
-        setupElement(countEl, { preselect: ['1', '2', '3', '4'], simple: true });  // Single-line
-        setupElement(compactEl, { preselect: ['1', '2', '3'] });
-        setupElement(counterEl, { preselect: ['1', '2', '3'], simple: true });  // Single-line
-        setupElement(checkboxEl, { simple: true });  // Single-line options
-        setupElement(actionsEl);
-        setupElement(groupedEl, { withGroup: true });
-        setupElement(disabledEl, { preselect: ['1'], simple: true });  // Single-line
+        // Setup badges element with special dates
+        if (badgesEl) {
+          badgesEl.specialDates = getSpecialDates();
+        }
+
+        // Setup tooltips element with callback
+        if (tooltipsEl) {
+          tooltipsEl.getDateMetadataCallback = getTooltipMetadata;
+        }
       } catch (e) {
-        console.warn('Failed to load web-multiselect:', e);
+        console.warn('Failed to load web-daterangepicker:', e);
       }
     }
   });
@@ -98,7 +90,7 @@
   // Apply theme to all elements whenever it changes
   $effect(() => {
     if ($theme && $baseTheme) {
-      const elements = [basicEl, singleEl, countEl, compactEl, counterEl, checkboxEl, actionsEl, groupedEl, disabledEl];
+      const elements = [singleEl, rangeEl, multiMonthEl, badgesEl, tooltipsEl, manualEl, formatEl, disabledEl];
       elements.forEach(el => {
         if (el) {
           // Apply base theme first (includes font-family)
@@ -131,13 +123,19 @@
   // Get current background color for preview container
   let bgColor = $derived($colors.background);
   let textColor = $derived($colors.text);
+
+  function toggleManualPicker() {
+    if (manualEl && 'toggle' in manualEl) {
+      (manualEl as HTMLElement & { toggle: () => void }).toggle();
+    }
+  }
 </script>
 
 <div class="space-y-4">
   <div>
     <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Live Preview</h3>
     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-      Different multiselect configurations showing various theme variables
+      Different daterangepicker configurations showing various theme variables
     </p>
   </div>
 
@@ -147,140 +145,120 @@
   >
     {#if mounted}
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Basic Multi-Select with Badges -->
+        <!-- Single Date Picker -->
         <div class="space-y-2">
           <h4 class="text-xs font-medium opacity-70" style="color: {textColor}">
-            Multi-Select (Badges)
+            Single Date
           </h4>
-          <web-multiselect
-            bind:this={basicEl}
-            placeholder="Select frameworks..."
-            enable-search="true"
-            multiple="true"
-            enable-badge-tooltips="true"
-          ></web-multiselect>
-        </div>
-
-        <!-- Single Select -->
-        <div class="space-y-2">
-          <h4 class="text-xs font-medium opacity-70" style="color: {textColor}">
-            Single Select
-          </h4>
-          <web-multiselect
+          <web-daterangepicker
             bind:this={singleEl}
-            placeholder="Select a language..."
-            enable-search="true"
-            multiple="false"
-          ></web-multiselect>
+            selection-mode="single"
+            placeholder="Select a date..."
+          ></web-daterangepicker>
         </div>
 
-        <!-- Count Display Mode -->
+        <!-- Date Range Picker -->
         <div class="space-y-2">
           <h4 class="text-xs font-medium opacity-70" style="color: {textColor}">
-            Count Mode
+            Date Range
           </h4>
-          <web-multiselect
-            bind:this={countEl}
-            placeholder="Select languages..."
-            enable-search="true"
-            multiple="true"
-            badges-display-mode="count"
-            enable-badge-tooltips="true"
-          ></web-multiselect>
+          <web-daterangepicker
+            bind:this={rangeEl}
+            selection-mode="range"
+            placeholder="Start - End"
+          ></web-daterangepicker>
         </div>
 
-        <!-- Compact Display Mode -->
+        <!-- Multi-Month Mode -->
         <div class="space-y-2">
           <h4 class="text-xs font-medium opacity-70" style="color: {textColor}">
-            Compact Mode (+X more)
+            Multi-Month (2)
           </h4>
-          <web-multiselect
-            bind:this={compactEl}
-            placeholder="Select multiple..."
-            enable-search="true"
-            multiple="true"
-            badges-display-mode="compact"
-            enable-badge-tooltips="true"
-          ></web-multiselect>
+          <web-daterangepicker
+            bind:this={multiMonthEl}
+            selection-mode="range"
+            visible-months="2"
+            placeholder="Select range..."
+          ></web-daterangepicker>
         </div>
 
-        <!-- With Counter Badge -->
+        <!-- With Badges -->
         <div class="space-y-2">
           <h4 class="text-xs font-medium opacity-70" style="color: {textColor}">
-            With Counter Badge
+            With Badges
           </h4>
-          <web-multiselect
-            bind:this={counterEl}
-            placeholder="Select languages..."
-            enable-search="true"
-            multiple="true"
-            show-counter="true"
-            enable-badge-tooltips="true"
-          ></web-multiselect>
+          <web-daterangepicker
+            bind:this={badgesEl}
+            selection-mode="single"
+            placeholder="Open to see badges..."
+          ></web-daterangepicker>
         </div>
 
-        <!-- With Checkboxes -->
+        <!-- With Tooltips -->
         <div class="space-y-2">
           <h4 class="text-xs font-medium opacity-70" style="color: {textColor}">
-            With Checkboxes
+            With Tooltips
           </h4>
-          <web-multiselect
-            bind:this={checkboxEl}
-            placeholder="Select languages..."
-            enable-search="true"
-            multiple="true"
-            show-checkboxes="true"
-            enable-badge-tooltips="true"
-          ></web-multiselect>
+          <web-daterangepicker
+            bind:this={tooltipsEl}
+            selection-mode="single"
+            placeholder="Hover days 5,7,10..."
+          ></web-daterangepicker>
         </div>
 
-        <!-- With Actions (Select All / Clear All) -->
+        <!-- Manual Trigger -->
         <div class="space-y-2">
           <h4 class="text-xs font-medium opacity-70" style="color: {textColor}">
-            Select All / Clear All
+            Manual Trigger
           </h4>
-          <web-multiselect
-            bind:this={actionsEl}
-            placeholder="Select frameworks..."
-            enable-search="true"
-            multiple="true"
-            show-select-all="true"
-            show-checkboxes="true"
-            enable-badge-tooltips="true"
-          ></web-multiselect>
+          <div class="flex gap-2 items-stretch">
+            <web-daterangepicker
+              bind:this={manualEl}
+              selection-mode="single"
+              calendar-open-trigger="manual"
+              placeholder="Use button..."
+              class="flex-1"
+            ></web-daterangepicker>
+            <button
+              type="button"
+              onclick={toggleManualPicker}
+              class="px-3 rounded border text-sm flex items-center"
+              style="border-color: {textColor}; color: {textColor}; opacity: 0.7"
+            >
+              📅
+            </button>
+          </div>
         </div>
 
-        <!-- Grouped Options -->
+        <!-- Different Format -->
         <div class="space-y-2">
           <h4 class="text-xs font-medium opacity-70" style="color: {textColor}">
-            Grouped Options
+            DD/MM/YYYY Format
           </h4>
-          <web-multiselect
-            bind:this={groupedEl}
-            placeholder="Select by category..."
-            enable-search="true"
-            multiple="true"
-            enable-badge-tooltips="true"
-          ></web-multiselect>
+          <web-daterangepicker
+            bind:this={formatEl}
+            selection-mode="single"
+            date-format-mask="DD/MM/YYYY"
+            placeholder="DD/MM/YYYY"
+          ></web-daterangepicker>
         </div>
 
         <!-- Disabled State -->
-        <div class="space-y-2 md:col-span-2">
+        <div class="space-y-2">
           <h4 class="text-xs font-medium opacity-70" style="color: {textColor}">
             Disabled State
           </h4>
-          <web-multiselect
+          <web-daterangepicker
             bind:this={disabledEl}
+            selection-mode="single"
             placeholder="Disabled..."
-            multiple="true"
-            enable-badge-tooltips="true"
             disabled
-          ></web-multiselect>
+          ></web-daterangepicker>
         </div>
       </div>
     {:else}
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {#each Array(9) as _}
+        {#each Array(8) as _}
           <div class="h-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
         {/each}
       </div>
@@ -297,7 +275,7 @@
     </summary>
     <div class="px-4 pb-4 text-xs">
       <p class="text-gray-500 dark:text-gray-400 mb-3">
-        How base variables map to multiselect UI elements:
+        How base variables map to daterangepicker UI elements:
       </p>
       <div class="overflow-x-auto">
         <table class="w-full text-left">
@@ -311,47 +289,47 @@
           <tbody class="text-gray-600 dark:text-gray-400">
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-accent-color</code></td>
-              <td class="py-2 pr-4">Selected options, checkboxes, focus ring</td>
+              <td class="py-2 pr-4">Selected day, range endpoints, today button</td>
               <td class="py-2">Primary brand color for selections</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-accent-color-hover</code></td>
-              <td class="py-2 pr-4">Hovered selected options</td>
+              <td class="py-2 pr-4">Selected day hover state</td>
               <td class="py-2">Interactive feedback on selections</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-primary-bg</code></td>
-              <td class="py-2 pr-4">Input background, dropdown</td>
+              <td class="py-2 pr-4">Calendar background, input background</td>
               <td class="py-2">Main surface color</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-primary-bg-hover</code></td>
-              <td class="py-2 pr-4">Option hover background</td>
-              <td class="py-2">Row highlight on hover</td>
+              <td class="py-2 pr-4">Day cell hover, nav button hover</td>
+              <td class="py-2">Hover highlights</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-color-1</code></td>
-              <td class="py-2 pr-4">Selected values, option labels</td>
+              <td class="py-2 pr-4">Day numbers, month/year header</td>
               <td class="py-2">Primary readable text</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-color-3</code></td>
-              <td class="py-2 pr-4">Option subtitles/descriptions</td>
-              <td class="py-2">Secondary information</td>
+              <td class="py-2 pr-4">Weekday headers (Mon, Tue...)</td>
+              <td class="py-2">Secondary labels</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-color-4</code></td>
-              <td class="py-2 pr-4">Placeholder text</td>
-              <td class="py-2">Input hints</td>
+              <td class="py-2 pr-4">Other month days, placeholder</td>
+              <td class="py-2">Muted/inactive text</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-on-accent</code></td>
-              <td class="py-2 pr-4">Badge text, checkbox checkmark</td>
+              <td class="py-2 pr-4">Text on selected days</td>
               <td class="py-2">Contrast on brand backgrounds</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-border-color</code></td>
-              <td class="py-2 pr-4">Input border, dropdown border</td>
+              <td class="py-2 pr-4">Calendar border, input border</td>
               <td class="py-2">Element separation</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
@@ -361,12 +339,12 @@
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-dropdown-box-shadow</code></td>
-              <td class="py-2 pr-4">Dropdown elevation</td>
-              <td class="py-2">Depth/layering effect</td>
+              <td class="py-2 pr-4">Calendar popup shadow</td>
+              <td class="py-2">Floating elevation</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-tooltip-background</code></td>
-              <td class="py-2 pr-4">Badge tooltips</td>
+              <td class="py-2 pr-4">Day tooltips</td>
               <td class="py-2">Tooltip surface color</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
@@ -376,7 +354,7 @@
             </tr>
             <tr>
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-border-radius-*</code></td>
-              <td class="py-2 pr-4">Input, badges, dropdown corners</td>
+              <td class="py-2 pr-4">Day cells, input, calendar container</td>
               <td class="py-2">Roundness style (sm/md/lg)</td>
             </tr>
           </tbody>

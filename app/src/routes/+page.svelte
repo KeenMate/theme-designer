@@ -1,11 +1,12 @@
 <script lang="ts">
   import ColorPicker from '$lib/components/ColorPicker.svelte';
   import ThemePresets from '$lib/components/ThemePresets.svelte';
+  import FontSelector from '$lib/components/FontSelector.svelte';
   import LivePreview from '$lib/components/LivePreview.svelte';
-  import ExportPanel from '$lib/components/ExportPanel.svelte';
+  import DaterangepickerPreview from '$lib/components/DaterangepickerPreview.svelte';
   import VariableEditor from '$lib/components/VariableEditor.svelte';
   import ComponentSelector from '$lib/components/ComponentSelector.svelte';
-  import { colors, updateColor, resetAll } from '$lib/stores/theme';
+  import { colors, updateColor, resetAll, selectedComponent } from '$lib/stores/theme';
 </script>
 
 <svelte:head>
@@ -13,9 +14,9 @@
   <meta name="description" content="Generate CSS variable themes for KeenMate web components from just 3 base colors." />
 </svelte:head>
 
-<!-- 4-column grid layout - fixed height, no page scroll -->
-<div class="grid grid-cols-1 xl:grid-cols-12 gap-4 h-full overflow-hidden">
-  <!-- Column 1: Component Selector + Presets + Base Colors -->
+<!-- 3-column grid layout - fixed height, no page scroll -->
+<div class="grid grid-cols-1 xl:grid-cols-10 gap-4 h-full overflow-hidden">
+  <!-- Column 1: Component Selector + Presets + Base Colors + Typography -->
   <div class="xl:col-span-2 flex flex-col gap-4 overflow-y-auto min-h-0">
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
       <ComponentSelector />
@@ -58,6 +59,10 @@
         onchange={(v) => updateColor('accent', v)}
       />
     </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <FontSelector />
+    </div>
   </div>
 
   <!-- Column 2: Variable Editor (scrollable inside) -->
@@ -70,14 +75,11 @@
   <!-- Column 3: Live Preview (scrollable inside) -->
   <div class="xl:col-span-4 min-h-0">
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 h-full overflow-y-auto">
-      <LivePreview />
-    </div>
-  </div>
-
-  <!-- Column 4: Export Panel -->
-  <div class="xl:col-span-2 min-h-0">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 h-full overflow-hidden flex flex-col">
-      <ExportPanel />
+      {#if $selectedComponent === 'web-multiselect'}
+        <LivePreview />
+      {:else}
+        <DaterangepickerPreview />
+      {/if}
     </div>
   </div>
 </div>
