@@ -14,6 +14,7 @@ Features:
 - Lock/unlock individual variables to preserve custom values
 - Import/export themes in CSS, JSON, and SCSS formats
 - Support for both standalone and cascading (base layer) export modes
+- Variable Reference legend showing how base variables map to component UI elements
 
 ## Installation
 
