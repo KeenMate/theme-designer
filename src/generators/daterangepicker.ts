@@ -17,12 +17,15 @@ import {
  * @returns Object containing CSS custom properties that need explicit values
  */
 export function generateDaterangepickerTheme(input: ThemeInput): Record<string, string> {
-  const { background, text } = input;
+  const { background, text, accent } = input;
   const isDark = getLightness(background) < 50;
 
   // Derived values for special cases
   const textMuted = mix(text, background, 60);
   const bgActive = isDark ? lighten(background, 12) : darken(background, 8);
+
+  // Scrollbar colors (dark/light specific)
+  const scrollbarThumb = isDark ? lighten(background, 20) : darken(background, 15);
 
   return {
     // ========================================================================
@@ -46,5 +49,12 @@ export function generateDaterangepickerTheme(input: ThemeInput): Record<string, 
     '--drp-shadow-xl': isDark
       ? '0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4)'
       : '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+
+    // Badge count background (red adapts to dark/light theme)
+    '--drp-badge-count-bg': isDark ? '#dc2626' : '#ef4444',
+
+    // Scrollbar (dark/light specific - cannot be derived via CSS cascade)
+    '--drp-rolling-scrollbar-thumb': scrollbarThumb,
+    '--drp-rolling-scrollbar-thumb-hover': accent,
   };
 }

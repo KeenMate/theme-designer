@@ -268,29 +268,175 @@ export const multiselectGroups: VariableGroup[] = [
 // =============================================================================
 
 export const daterangepickerGroups: VariableGroup[] = [
-  // Note: Most --drp-* variables are derived from --base-* in CSS.
-  // Only variables with special computed values are shown here.
-  // To customize colors, use the Base Colors panel which affects all components.
   {
-    name: 'Active States',
+    name: 'Global Colors',
     expanded: true,
     variables: [
-      '--drp-header-bg-active',
-      '--drp-nav-bg-active',
-      '--drp-unified-range-bg-active',
+      '--drp-accent-color',
+      '--drp-accent-color-hover',
+      '--drp-text-primary',
+      '--drp-text-secondary',
+      '--drp-text-on-accent',
+      '--drp-primary-bg',
+      '--drp-primary-bg-hover',
+      '--drp-border-color',
+      '--drp-dropdown-background',
     ],
   },
   {
-    name: 'Special Colors',
-    expanded: true,
+    name: 'Input',
+    expanded: false,
     variables: [
+      '--drp-input-background',
+      '--drp-input-color',
+      '--drp-input-border',
+      '--drp-input-border-hover',
+      '--drp-input-border-focus',
+      '--drp-input-placeholder-color',
+      '--drp-input-background-disabled',
+      '--drp-input-focus-shadow-color',
+    ],
+  },
+  {
+    name: 'Header & Navigation',
+    expanded: false,
+    variables: [
+      '--drp-header-text-color',
+      '--drp-header-bg-hover',
+      '--drp-header-bg-active',
+      '--drp-nav-text-color',
+      '--drp-nav-border-color',
+      '--drp-nav-bg-hover',
+      '--drp-nav-bg-active',
+      '--drp-nav-border-hover',
+    ],
+  },
+  {
+    name: 'Rolling Selector',
+    expanded: false,
+    variables: [
+      '--drp-rolling-bg',
+      '--drp-rolling-border-color',
+      '--drp-rolling-scrollbar-thumb',
+      '--drp-rolling-scrollbar-thumb-hover',
+      '--drp-rolling-item-bg-hover',
+      '--drp-rolling-item-color',
+      '--drp-rolling-item-bg-selected',
+      '--drp-rolling-item-color-selected',
+      '--drp-rolling-item-bg-selected-hover',
+    ],
+  },
+  {
+    name: 'Calendar Days - Default',
+    expanded: false,
+    variables: [
+      '--drp-weekday-color',
+      '--drp-day-text-color',
+      '--drp-day-border-color',
       '--drp-day-other-month-color',
+      '--drp-day-disabled-color',
+    ],
+  },
+  {
+    name: 'Calendar Days - Hover',
+    expanded: false,
+    variables: [
+      '--drp-day-bg-hover',
+      '--drp-day-border-hover',
+    ],
+  },
+  {
+    name: 'Calendar Days - Selected & Range',
+    expanded: false,
+    variables: [
+      '--drp-day-today-border',
+      '--drp-day-selected-bg',
+      '--drp-day-selected-color',
+      '--drp-day-selected-bg-hover',
+      '--drp-day-focused-outline',
+      '--drp-day-range-bg',
+      '--drp-day-range-color',
+    ],
+  },
+  {
+    name: 'Calendar Days - Drag Preview',
+    expanded: false,
+    variables: [
+      '--drp-day-drag-invalid-bg',
+    ],
+  },
+  {
+    name: 'Calendar Days - Special',
+    expanded: false,
+    variables: [
+      '--drp-holiday-color',
+      '--drp-event-color',
+    ],
+  },
+  {
+    name: 'Summary & Actions',
+    expanded: false,
+    variables: [
+      '--drp-summary-text-color',
+      '--drp-summary-border-color',
+      '--drp-summary-count-color',
+      '--drp-button-border-color',
+      '--drp-button-bg',
+      '--drp-button-bg-hover',
+      '--drp-button-color',
+      '--drp-button-border-hover',
+      '--drp-button-today-color',
+      '--drp-button-clear-color',
+      '--drp-button-cancel-color',
+      '--drp-button-apply-bg',
+      '--drp-button-apply-color',
+      '--drp-button-apply-border',
+      '--drp-button-apply-bg-hover',
+    ],
+  },
+  {
+    name: 'Badges',
+    expanded: false,
+    variables: [
+      '--drp-badge-number-bg',
+      '--drp-badge-number-color',
+      '--drp-badge-count-bg',
+      '--drp-badge-count-color',
+      '--drp-badge-text-bg',
+      '--drp-badge-text-color',
+    ],
+  },
+  {
+    name: 'Unified Navigation',
+    expanded: false,
+    variables: [
+      '--drp-unified-range-text-color',
+      '--drp-unified-range-bg-hover',
+      '--drp-unified-range-bg-active',
+      '--drp-unified-month-color',
+      '--drp-unified-rolling-disabled-color',
+    ],
+  },
+  {
+    name: 'Tooltip',
+    expanded: false,
+    variables: [
+      '--drp-tooltip-background',
+      '--drp-tooltip-text-color',
+    ],
+  },
+  {
+    name: 'Loading',
+    expanded: false,
+    variables: [
       '--drp-loading-overlay-background',
+      '--drp-loading-spinner-color',
+      '--drp-loading-spinner-accent',
     ],
   },
   {
     name: 'Effects',
-    expanded: true,
+    expanded: false,
     variables: [
       '--drp-shadow-xl',
     ],

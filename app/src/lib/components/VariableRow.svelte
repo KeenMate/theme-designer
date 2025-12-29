@@ -1,18 +1,20 @@
 <script lang="ts">
   import { isValidHex, normalizeHex } from '@keenmate/theme-designer';
   import { extractColor, isColorVariable } from '$lib/variableGroups';
+  import { resolveColorFormula } from '$lib/colorResolver';
 
   interface Props {
     varName: string;
     value: string;
     calculatedValue: string;
     isLocked: boolean;
+    themeContext: Record<string, string>;
     onToggleLock: () => void;
     onChange: (value: string) => void;
     onReset: () => void;
   }
 
-  let { varName, value, calculatedValue, isLocked, onToggleLock, onChange, onReset }: Props = $props();
+  let { varName, value, calculatedValue, isLocked, themeContext, onToggleLock, onChange, onReset }: Props = $props();
 
   let inputValue = $state(value);
   let isValid = $state(true);
@@ -23,11 +25,24 @@
   // Determine if this is a color-only variable or a complex value
   let isColorOnly = $derived(isColorVariable(varName, value));
   let extractedColor = $derived(extractColor(value));
-  let displayColor = $derived(extractedColor || '#000000');
 
-  // Check if extracted color is a valid hex that can be used with color picker
+  // Resolve CSS formulas (color-mix, var references) to actual colors for display
+  let resolvedColor = $derived.by(() => {
+    // First try to resolve CSS formulas
+    const resolved = resolveColorFormula(value, themeContext);
+    if (resolved) return resolved;
+    // Fall back to simple extraction
+    return extractedColor;
+  });
+
+  let displayColor = $derived(resolvedColor || '#000000');
+
+  // For determining if we have a color to show
+  let hasColor = $derived(!!resolvedColor || !!extractedColor);
+
+  // Check if resolved color is a valid hex that can be used with color picker
   let isValidHexColor = $derived.by(() => {
-    const color = extractedColor;
+    const color = resolvedColor;
     if (color && color.startsWith('#') && isValidHex(color)) {
       const normalized = normalizeHex(color);
       // Color input only supports 6-digit hex (#rrggbb)
@@ -38,8 +53,16 @@
 
   // For color input, ensure we have a valid hex (must be #rrggbb format)
   let safeColorValue = $derived.by(() => {
-    if (isValidHexColor) {
-      return normalizeHex(extractedColor!);
+    if (isValidHexColor && resolvedColor) {
+      try {
+        const normalized = normalizeHex(resolvedColor);
+        // Verify it's exactly #rrggbb format
+        if (/^#[0-9a-f]{6}$/i.test(normalized)) {
+          return normalized;
+        }
+      } catch {
+        // normalizeHex might throw on invalid input
+      }
     }
     return '#000000';
   });
@@ -218,7 +241,7 @@
   {/if}
 
   <!-- Color swatch or Unit indicator -->
-  {#if extractedColor && extractedColor !== 'transparent'}
+  {#if hasColor && resolvedColor !== 'transparent'}
     <div class="relative flex-shrink-0">
       <button
         type="button"
@@ -226,19 +249,20 @@
         class="w-12 h-5 rounded border border-gray-300 dark:border-gray-600
                {isValidHexColor ? 'cursor-pointer hover:scale-105 transition-transform' : 'cursor-default'}"
         style="background-color: {displayColor}"
-        title={isValidHexColor ? 'Click to change color' : extractedColor}
+        title={isValidHexColor ? 'Click to change color' : (resolvedColor || value)}
       ></button>
       {#if isValidHexColor}
+        {@const colorValue = /^#[0-9a-f]{6}$/i.test(safeColorValue) ? safeColorValue : '#000000'}
         <input
           type="color"
           id={colorInputId}
-          value={safeColorValue}
+          value={colorValue}
           oninput={handleColorInput}
           class="absolute top-0 right-0 w-full h-full opacity-0 cursor-pointer"
         />
       {/if}
     </div>
-  {:else if extractedColor === 'transparent'}
+  {:else if resolvedColor === 'transparent' || extractedColor === 'transparent'}
     <div
       class="w-12 h-5 rounded border border-gray-300 dark:border-gray-600 flex-shrink-0"
       style="background: repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 6px 6px"

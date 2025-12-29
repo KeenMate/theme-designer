@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Input size height base variables**: `--base-input-size-xs-height` through `--base-input-size-xl-height` - Unitless multipliers for consistent input heights across components (3.1 to 4.1, multiplied by component's rem unit)
+
+- **Variable Reference legends**: Component-specific legend tables in Theme Designer app showing how base variables map to each component's UI elements (multiselect: badges, checkboxes, options; daterangepicker: day cells, calendar navigation)
+
 - **Base theme variables**:
   - `--base-border-radius-sm`, `--base-border-radius-md`, `--base-border-radius-lg` - Border radius coefficients (multiplied by rem)
   - `--base-input-border`, `--base-input-border-hover`, `--base-input-border-focus` - Full border properties for input states (allows controlling width, style, and color per state)
@@ -25,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BASE_VARIABLES.md**: Documentation of all `--base-*` CSS custom properties
 
 ### Changed
+
+- **Dependencies**: Updated to npm packages `@keenmate/web-daterangepicker@^1.8.0` and `@keenmate/web-multiselect@^1.6.0` (from local file references)
+
+- **Docker build**: Added `.dockerignore` to exclude `node_modules`, `dist`, and build artifacts for faster builds
 
 - **BREAKING: Cascading theme architecture overhaul**
   - Component generators (`multiselect.ts`) no longer set redundant `--ms-*` variables that have `--base-*` equivalents
@@ -51,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Hover/focus states use `--ms-input-border-hover` and `--ms-input-border-focus`
 
 ### Fixed
+
+- **CSS Parser Comment Handling** - CSS parser now strips comments before parsing variables, preventing false matches from example syntax in documentation comments (e.g., `--ms-accent-color: #custom` in comments was being matched as a real variable)
 
 - **Color Picker Positioning** - Color picker now appears directly on the color swatch button instead of far away when deep in the variable list
 - **Selected Option Title Color** - Added `--ms-option-title-color-selected` and `--ms-option-title-color-selected-hover` to multiselect generator so title text uses contrasted color on accent background

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { theme, colors, baseTheme } from '$lib/stores/theme';
+  import { resolvedTheme, colors, baseTheme } from '$lib/stores/theme';
   import { applyTheme } from '@keenmate/theme-designer';
 
   type MultiselectElement = HTMLElement & {
@@ -97,14 +97,14 @@
 
   // Apply theme to all elements whenever it changes
   $effect(() => {
-    if ($theme && $baseTheme) {
+    if ($resolvedTheme && $baseTheme) {
       const elements = [basicEl, singleEl, countEl, compactEl, counterEl, checkboxEl, actionsEl, groupedEl, disabledEl];
       elements.forEach(el => {
         if (el) {
           // Apply base theme first (includes font-family)
           applyTheme(el, $baseTheme);
-          // Then apply component theme
-          applyTheme(el, $theme);
+          // Then apply component theme (resolved - all var() and color-mix() computed)
+          applyTheme(el, $resolvedTheme);
         }
       });
     }
@@ -311,17 +311,22 @@
           <tbody class="text-gray-600 dark:text-gray-400">
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-accent-color</code></td>
-              <td class="py-2 pr-4">Selected options, checkboxes, focus ring</td>
+              <td class="py-2 pr-4">Checkboxes, focus ring, badge remove button</td>
               <td class="py-2">Primary brand color for selections</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-accent-color-hover</code></td>
-              <td class="py-2 pr-4">Hovered selected options</td>
-              <td class="py-2">Interactive feedback on selections</td>
+              <td class="py-2 pr-4">Checkbox hover, badge remove hover</td>
+              <td class="py-2">Interactive feedback on accent elements</td>
+            </tr>
+            <tr class="border-b border-gray-100 dark:border-gray-700/50">
+              <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-accent-color-light</code></td>
+              <td class="py-2 pr-4">Badge background, selected option tint</td>
+              <td class="py-2">Subtle accent for backgrounds (10-15% opacity)</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-primary-bg</code></td>
-              <td class="py-2 pr-4">Input background, dropdown</td>
+              <td class="py-2 pr-4">Input background, dropdown background</td>
               <td class="py-2">Main surface color</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
@@ -331,27 +336,27 @@
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-color-1</code></td>
-              <td class="py-2 pr-4">Selected values, option labels</td>
+              <td class="py-2 pr-4">Option labels, input text</td>
               <td class="py-2">Primary readable text</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-color-3</code></td>
-              <td class="py-2 pr-4">Option subtitles/descriptions</td>
-              <td class="py-2">Secondary information</td>
+              <td class="py-2 pr-4">Option subtitles, group labels</td>
+              <td class="py-2">Secondary/muted text</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-color-4</code></td>
               <td class="py-2 pr-4">Placeholder text</td>
-              <td class="py-2">Input hints</td>
+              <td class="py-2">Input hints/captions</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-on-accent</code></td>
-              <td class="py-2 pr-4">Badge text, checkbox checkmark</td>
-              <td class="py-2">Contrast on brand backgrounds</td>
+              <td class="py-2 pr-4">Badge remove icon, checkbox checkmark</td>
+              <td class="py-2">Contrast text on accent backgrounds</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-border-color</code></td>
-              <td class="py-2 pr-4">Input border, dropdown border</td>
+              <td class="py-2 pr-4">Input border, dropdown border, group dividers</td>
               <td class="py-2">Element separation</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
@@ -376,7 +381,7 @@
             </tr>
             <tr>
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-border-radius-*</code></td>
-              <td class="py-2 pr-4">Input, badges, dropdown corners</td>
+              <td class="py-2 pr-4">Input, badges, dropdown, checkboxes</td>
               <td class="py-2">Roundness style (sm/md/lg)</td>
             </tr>
           </tbody>

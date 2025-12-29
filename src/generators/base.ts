@@ -41,6 +41,8 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
   // Accent variations
   const accentHover = isDark ? lighten(accent, 10) : darken(accent, 10);
   const accentActive = isDark ? lighten(accent, 15) : darken(accent, 15);
+  const accentLight = isDark ? alpha(accent, 0.15) : alpha(accent, 0.1);
+  const accentLightHover = isDark ? alpha(accent, 0.2) : alpha(accent, 0.15);
 
   // Disabled colors
   const disabledBg = isDark ? alpha(text, 0.05) : alpha(text, 0.03);
@@ -59,10 +61,18 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
     '--base-accent-color': accent,
     '--base-accent-color-hover': accentHover,
     '--base-accent-color-active': accentActive,
+    '--base-accent-color-light': accentLight,
+    '--base-accent-color-light-hover': accentLightHover,
 
     // Background colors
     '--base-primary-bg': background,
     '--base-primary-bg-hover': bgHover,
+
+    // Component-specific backgrounds (all default to main background)
+    '--base-hint-background': background,
+    '--base-actions-background': background,
+    '--base-popover-background': background,
+    '--base-badge-background-hover': background,
 
     // Text color levels (FluentUI-style hierarchy)
     '--base-text-color-1': textLevel1,
@@ -73,6 +83,7 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
 
     // Border
     '--base-border-color': border,
+    '--base-border': `1px solid ${border}`,
 
     // Input field colors (same as base for most cases)
     '--base-input-background': background,

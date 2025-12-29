@@ -25,6 +25,8 @@ This enables:
 | `--base-accent-color` | Primary accent/brand color | `#3b82f6` |
 | `--base-accent-color-hover` | Accent hover state (lighter in dark mode, darker in light) | `#60a5fa` |
 | `--base-accent-color-active` | Accent active/pressed state | `#93c5fd` |
+| `--base-accent-color-light` | Light accent for backgrounds | `rgba(59, 130, 246, 0.1)` |
+| `--base-accent-color-light-hover` | Light accent hover | `rgba(59, 130, 246, 0.15)` |
 
 ### Background Colors
 
@@ -32,6 +34,15 @@ This enables:
 |----------|-------------|---------------|
 | `--base-primary-bg` | Main background color | `#1f2937` |
 | `--base-primary-bg-hover` | Background hover state | `#374151` |
+
+### Component Backgrounds
+
+| Variable | Description | Example Value |
+|----------|-------------|---------------|
+| `--base-hint-background` | Floating hint background | `#1f2937` |
+| `--base-actions-background` | Dropdown actions area background | `#1f2937` |
+| `--base-popover-background` | Popover/modal background | `#1f2937` |
+| `--base-badge-background-hover` | Badge hover background | `#1f2937` |
 
 ### Text Color Levels (FluentUI-style)
 
@@ -52,6 +63,7 @@ Text colors use a numbered level system inspired by Microsoft FluentUI. Lower nu
 | Variable | Description | Example Value |
 |----------|-------------|---------------|
 | `--base-border-color` | Default border color | `#374151` |
+| `--base-border` | Full border (1px solid) | `1px solid #374151` |
 
 ### Input Fields
 

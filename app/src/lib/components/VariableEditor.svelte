@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getVariableGroups } from '$lib/variableGroups';
   import { finalTheme, calculatedTheme, locked, toggleLock, setOverride, lockVariable, unlockVariable, selectedComponent, baseTheme, finalBaseTheme } from '$lib/stores/theme';
+  import { buildThemeContext } from '$lib/colorResolver';
   import VariableGroup from './VariableGroup.svelte';
   import VariableRow from './VariableRow.svelte';
 
@@ -9,6 +10,9 @@
 
   // Get base theme variable names
   let baseVariables = $derived(Object.keys($baseTheme));
+
+  // Build theme context for color resolution (combines base + component themes)
+  let themeContext = $derived(buildThemeContext($baseTheme, $calculatedTheme));
 
   // Track which component we initialized for
   let initializedFor: string | null = $state(null);
@@ -115,6 +119,7 @@
           value={$finalBaseTheme[varName] || ''}
           calculatedValue={$baseTheme[varName] || ''}
           isLocked={$locked.has(varName)}
+          {themeContext}
           onToggleLock={() => handleToggleLock(varName)}
           onChange={(value) => handleValueChange(varName, value)}
           onReset={() => handleReset(varName)}
@@ -135,6 +140,7 @@
             value={$finalTheme[varName] || ''}
             calculatedValue={$calculatedTheme[varName] || ''}
             isLocked={$locked.has(varName)}
+            {themeContext}
             onToggleLock={() => handleToggleLock(varName)}
             onChange={(value) => handleValueChange(varName, value)}
             onReset={() => handleReset(varName)}

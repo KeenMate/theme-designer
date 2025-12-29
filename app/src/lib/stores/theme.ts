@@ -10,6 +10,8 @@ import {
   COMPONENT_PREFIXES,
 } from '@keenmate/theme-designer';
 import type { ThemeInput, ComponentType, GeneratedTheme } from '@keenmate/theme-designer';
+import { getComponentDefaultsObject } from '$lib/componentDefaults';
+import { resolveTheme, buildThemeContext } from '$lib/colorResolver';
 
 // All valid CSS variable prefixes we support
 const VALID_PREFIXES = ['--ms-', '--drp-', '--base-'];
@@ -49,9 +51,14 @@ export const fullTheme = derived(
 );
 
 // Calculated theme from generator (based on base colors and selected component)
+// Merges CSS defaults with generator output (generator values override defaults)
 export const calculatedTheme = derived(
   [colors, selectedComponent],
-  ([$colors, $component]) => generateTheme($component, $colors)
+  ([$colors, $component]) => {
+    const defaults = getComponentDefaultsObject($component);
+    const generated = generateTheme($component, $colors);
+    return { ...defaults, ...generated };
+  }
 );
 
 // User overrides for individual variables
@@ -145,6 +152,15 @@ export const scssOutput = derived(
 
 // Keep the old theme export for backwards compatibility
 export const theme = finalTheme;
+
+// Resolved theme for live preview - all var() and color-mix() resolved to actual values
+export const resolvedTheme = derived(
+  [finalTheme, baseTheme, colors],
+  ([$finalTheme, $baseTheme, $colors]) => {
+    const context = buildThemeContext($baseTheme, $finalTheme);
+    return resolveTheme($finalTheme, context, $colors.background);
+  }
+);
 
 // ============================================================================
 // Base color functions

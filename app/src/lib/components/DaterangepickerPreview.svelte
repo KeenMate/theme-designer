@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { theme, colors, baseTheme } from '$lib/stores/theme';
+  import { resolvedTheme, colors, baseTheme } from '$lib/stores/theme';
   import { applyTheme } from '@keenmate/theme-designer';
 
   type DaterangepickerElement = HTMLElement & {
@@ -89,14 +89,14 @@
 
   // Apply theme to all elements whenever it changes
   $effect(() => {
-    if ($theme && $baseTheme) {
+    if ($resolvedTheme && $baseTheme) {
       const elements = [singleEl, rangeEl, multiMonthEl, badgesEl, tooltipsEl, manualEl, formatEl, disabledEl];
       elements.forEach(el => {
         if (el) {
           // Apply base theme first (includes font-family)
           applyTheme(el, $baseTheme);
-          // Then apply component theme
-          applyTheme(el, $theme);
+          // Then apply component theme (resolved - all var() and color-mix() computed)
+          applyTheme(el, $resolvedTheme);
         }
       });
     }
@@ -289,13 +289,18 @@
           <tbody class="text-gray-600 dark:text-gray-400">
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-accent-color</code></td>
-              <td class="py-2 pr-4">Selected day, range endpoints, today button</td>
+              <td class="py-2 pr-4">Selected day, range endpoints, today indicator</td>
               <td class="py-2">Primary brand color for selections</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-accent-color-hover</code></td>
               <td class="py-2 pr-4">Selected day hover state</td>
               <td class="py-2">Interactive feedback on selections</td>
+            </tr>
+            <tr class="border-b border-gray-100 dark:border-gray-700/50">
+              <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-accent-color-light</code></td>
+              <td class="py-2 pr-4">Range selection background, badges</td>
+              <td class="py-2">Subtle accent for date ranges (10-15% opacity)</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-primary-bg</code></td>
@@ -315,7 +320,7 @@
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-color-3</code></td>
               <td class="py-2 pr-4">Weekday headers (Mon, Tue...)</td>
-              <td class="py-2">Secondary labels</td>
+              <td class="py-2">Secondary/muted text</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-color-4</code></td>
@@ -325,7 +330,7 @@
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-on-accent</code></td>
               <td class="py-2 pr-4">Text on selected days</td>
-              <td class="py-2">Contrast on brand backgrounds</td>
+              <td class="py-2">Contrast text on accent backgrounds</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
               <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-border-color</code></td>

@@ -12,7 +12,7 @@
     "@fortawesome/fontawesome-free": "^7.1.0",
     "@keenmate/theme-designer": "file:../",
     "@keenmate/web-daterangepicker": "^1.8.0",
-    "@keenmate/web-multiselect": "^1.6.0"
+    "@keenmate/web-multiselect": "^1.7.0"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.0",
