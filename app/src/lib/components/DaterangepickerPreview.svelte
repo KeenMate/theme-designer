@@ -328,7 +328,7 @@
               <td class="py-2">Muted/inactive text</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
-              <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-on-accent</code></td>
+              <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-text-color-on-accent</code></td>
               <td class="py-2 pr-4">Text on selected days</td>
               <td class="py-2">Contrast text on accent backgrounds</td>
             </tr>
@@ -348,7 +348,7 @@
               <td class="py-2">Floating elevation</td>
             </tr>
             <tr class="border-b border-gray-100 dark:border-gray-700/50">
-              <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-tooltip-background</code></td>
+              <td class="py-2 pr-4"><code class="text-purple-600 dark:text-purple-400">--base-tooltip-bg</code></td>
               <td class="py-2 pr-4">Day tooltips</td>
               <td class="py-2">Tooltip surface color</td>
             </tr>

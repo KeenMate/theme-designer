@@ -267,23 +267,23 @@ Shared variables derived from your 3 input colors. These provide consistent them
 | `--base-text-color-2` | text 85% mix with bg | Secondary text | Body text, descriptions |
 | `--base-text-color-3` | text 60% mix with bg | Tertiary text | Subtitles, secondary info |
 | `--base-text-color-4` | text 40% mix with bg | Muted text | Placeholders, hints, captions |
-| `--base-text-on-accent` | auto-contrast (black/white) | Legible on accent | Text on selected items, badges |
+| `--base-text-color-on-accent` | auto-contrast (black/white) | Legible on accent | Text on selected items, badges |
 | **Border** |
 | `--base-border-color` | background ±12-15% lightness | Element separation | Input borders, dividers |
 | **Input Fields** |
-| `--base-input-background` | `background` input | Input surface | Text inputs, selects |
+| `--base-input-bg` | `background` input | Input surface | Text inputs, selects |
 | `--base-input-color` | text-color-1 | Input text | User-entered text |
 | `--base-input-border` | 1px solid border-color | Default border | Input resting state |
 | `--base-input-border-hover` | border ±10% lightness | Hover hint | Input hover state |
 | `--base-input-border-focus` | 1px solid accent | Focus indicator | Focused input (uses accent) |
 | `--base-input-placeholder-color` | text-color-4 | Placeholder text | Input hints |
-| `--base-input-background-disabled` | text 3-5% alpha | Inactive surface | Disabled inputs |
+| `--base-input-bg-disabled` | text 3-5% alpha | Inactive surface | Disabled inputs |
 | **Dropdown/Popover** |
-| `--base-dropdown-background` | `background` input | Popup surface | Dropdown menus, popovers |
+| `--base-dropdown-bg` | `background` input | Popup surface | Dropdown menus, popovers |
 | `--base-dropdown-border` | 1px solid border-color | Popup border | Dropdown edge |
 | `--base-dropdown-box-shadow` | dark/light adaptive | Depth/elevation | Floating panel shadow |
 | **Tooltip** |
-| `--base-tooltip-background` | dark: bg+20%, light: #333 | Tooltip surface | Help text, badge tooltips |
+| `--base-tooltip-bg` | dark: bg+20%, light: #333 | Tooltip surface | Help text, badge tooltips |
 | `--base-tooltip-text-color` | auto-contrast | Tooltip text | Tooltip content |
 | **Typography** |
 | `--base-font-family` | system-ui stack (or custom) | Typeface | All component text |

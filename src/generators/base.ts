@@ -69,38 +69,38 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
     '--base-primary-bg-hover': bgHover,
 
     // Component-specific backgrounds (all default to main background)
-    '--base-hint-background': background,
-    '--base-actions-background': background,
-    '--base-popover-background': background,
-    '--base-badge-background-hover': background,
+    '--base-hint-bg': background,
+    '--base-actions-bg': background,
+    '--base-popover-bg': background,
+    '--base-badge-bg-hover': background,
 
     // Text color levels (FluentUI-style hierarchy)
     '--base-text-color-1': textLevel1,
     '--base-text-color-2': textLevel2,
     '--base-text-color-3': textLevel3,
     '--base-text-color-4': textLevel4,
-    '--base-text-on-accent': textOnAccent,
+    '--base-text-color-on-accent': textOnAccent,
 
     // Border
     '--base-border-color': border,
     '--base-border': `1px solid ${border}`,
 
     // Input field colors (same as base for most cases)
-    '--base-input-background': background,
+    '--base-input-bg': background,
     '--base-input-color': textLevel1,
     '--base-input-border': `1px solid ${border}`,
     '--base-input-border-hover': `1px solid ${isDark ? lighten(border, 10) : darken(border, 10)}`,
     '--base-input-border-focus': `1px solid ${accent}`,
     '--base-input-placeholder-color': textLevel4,
-    '--base-input-background-disabled': disabledBg,
+    '--base-input-bg-disabled': disabledBg,
 
     // Dropdown/popover colors
-    '--base-dropdown-background': background,
+    '--base-dropdown-bg': background,
     '--base-dropdown-border': `1px solid ${border}`,
     '--base-dropdown-box-shadow': boxShadow,
 
     // Tooltip colors
-    '--base-tooltip-background': isDark ? lighten(background, 20) : '#333333',
+    '--base-tooltip-bg': isDark ? lighten(background, 20) : '#333333',
     '--base-tooltip-text-color': isDark ? textLevel1 : '#ffffff',
 
     // Typography - Font Family

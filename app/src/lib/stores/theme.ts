@@ -95,22 +95,55 @@ export const finalBaseTheme = derived(
   }
 );
 
+// Component-specific variables (no base equivalent) - from generator only
+export const componentSpecificVars = derived(
+  [colors, selectedComponent],
+  ([$colors, $component]) => generateTheme($component, $colors)
+);
+
+// Component variables to export in cascading mode:
+// - Component-specific vars from generator (no base equivalent)
+// - User-overridden component vars (locked)
+export const cascadingComponentVars = derived(
+  [componentSpecificVars, overrides, locked, selectedComponent],
+  ([$specific, $over, $locked, $component]) => {
+    const prefix = COMPONENT_PREFIXES[$component];
+    const result: Record<string, string> = { ...$specific };
+
+    // Add any user-overridden component vars
+    for (const key of $locked) {
+      if (key.startsWith(`--${prefix}-`) && $over[key] !== undefined) {
+        result[key] = $over[key];
+      }
+    }
+
+    return result;
+  }
+);
+
 // Export formats derived from final theme and cascading mode
 export const cssOutput = derived(
-  [fullTheme, finalTheme, finalBaseTheme, cascadingMode, colors],
-  ([$fullTheme, $finalTheme, $finalBase, $cascading, $colors]) => {
+  [cascadingComponentVars, finalTheme, finalBaseTheme, cascadingMode, colors],
+  ([$cascadingComponent, $finalTheme, $finalBase, $cascading, $colors]) => {
     // Build @import statement if fontImport is set
     const importStatement = $colors.fontImport ? `${$colors.fontImport}\n\n` : '';
 
     if ($cascading) {
-      // In cascading mode, export base layer (with overrides) + component layer with var() refs
+      // In cascading mode, export base layer + only component-specific vars
       const baseProps = Object.entries($finalBase)
         .map(([prop, value]) => `  ${prop}: ${value};`)
         .join('\n');
-      const componentProps = Object.entries($fullTheme.component)
+
+      // Only export component vars that don't have base equivalents or were overridden
+      const componentEntries = Object.entries($cascadingComponent);
+      if (componentEntries.length === 0) {
+        return `${importStatement}/* Base Layer */\n:root {\n${baseProps}\n}`;
+      }
+
+      const componentProps = componentEntries
         .map(([prop, value]) => `  ${prop}: ${value};`)
         .join('\n');
-      return `${importStatement}/* Base Layer */\n:root {\n${baseProps}\n}\n\n/* Component Layer (references base) */\n:root {\n${componentProps}\n}`;
+      return `${importStatement}/* Base Layer */\n:root {\n${baseProps}\n}\n\n/* Component-specific overrides */\n:root {\n${componentProps}\n}`;
     }
     // Standalone mode: just the component variables with resolved values
     return `${importStatement}${toCSS($finalTheme, ':root')}`;
@@ -118,18 +151,17 @@ export const cssOutput = derived(
 );
 
 export const jsonOutput = derived(
-  [fullTheme, finalTheme, finalBaseTheme, cascadingMode],
-  ([$fullTheme, $finalTheme, $finalBase, $cascading]) => {
+  [cascadingComponentVars, finalTheme, finalBaseTheme, cascadingMode],
+  ([$cascadingComponent, $finalTheme, $finalBase, $cascading]) => {
     if ($cascading) {
-      // In cascading mode, export structured object with base (with overrides) and component
-      return JSON.stringify(
-        {
-          base: $finalBase,
-          component: $fullTheme.component,
-        },
-        null,
-        2
-      );
+      // In cascading mode, export structured object with base + component-specific vars only
+      const result: { base: Record<string, string>; component?: Record<string, string> } = {
+        base: $finalBase,
+      };
+      if (Object.keys($cascadingComponent).length > 0) {
+        result.component = $cascadingComponent;
+      }
+      return JSON.stringify(result, null, 2);
     }
     // Standalone mode: flat theme object
     return toJSON($finalTheme, true);
@@ -137,12 +169,15 @@ export const jsonOutput = derived(
 );
 
 export const scssOutput = derived(
-  [fullTheme, finalTheme, finalBaseTheme, cascadingMode],
-  ([$fullTheme, $finalTheme, $finalBase, $cascading]) => {
+  [cascadingComponentVars, finalTheme, finalBaseTheme, cascadingMode],
+  ([$cascadingComponent, $finalTheme, $finalBase, $cascading]) => {
     if ($cascading) {
-      // In cascading mode, export both SCSS maps (base with overrides)
+      // In cascading mode, export base + component-specific vars only
       const baseMap = toSCSS($finalBase, '$base-theme');
-      const componentMap = toSCSS($fullTheme.component, '$component-theme');
+      if (Object.keys($cascadingComponent).length === 0) {
+        return baseMap;
+      }
+      const componentMap = toSCSS($cascadingComponent, '$component-theme');
       return `${baseMap}\n\n${componentMap}`;
     }
     // Standalone mode: single theme map
@@ -433,6 +468,7 @@ function getCurrentPrefix(): string {
  */
 export function importTheme(variables: Record<string, string>) {
   const currentCalc = get(calculatedTheme);
+  const currentBase = get(baseTheme);
   const prefix = getCurrentPrefix();
 
   // Extract base colors from imported variables to update the colors store
@@ -441,7 +477,7 @@ export function importTheme(variables: Record<string, string>) {
 
   // Priority: --base-* > --{prefix}-* (current component)
   const bgKey = variables['--base-primary-bg'] ?? variables[`--${prefix}-primary-bg`];
-  const textKey = variables['--base-text-primary'] ?? variables[`--${prefix}-text-primary`];
+  const textKey = variables['--base-text-color-1'] ?? variables[`--${prefix}-text-color-1`];
   const accentKey = variables['--base-accent-color'] ?? variables[`--${prefix}-accent-color`];
 
   if (bgKey) {
@@ -459,12 +495,22 @@ export function importTheme(variables: Record<string, string>) {
     colors.update((c) => ({ ...c, ...newColors }));
   }
 
-  // Lock and override all imported variables for the current component
+  // Lock and override all imported variables
   for (const [varName, value] of Object.entries(variables)) {
     // Skip var() references - we only want resolved values
     if (value.startsWith('var(')) continue;
 
-    // Import variables that match the current component prefix
+    // Import --base-* variables
+    if (varName.startsWith('--base-') && varName in currentBase) {
+      locked.update((l) => {
+        const newLocked = new Set(l);
+        newLocked.add(varName);
+        return newLocked;
+      });
+      overrides.update((o) => ({ ...o, [varName]: value }));
+    }
+
+    // Import component variables that match the current component prefix
     if (varName.startsWith(`--${prefix}-`) && varName in currentCalc) {
       locked.update((l) => {
         const newLocked = new Set(l);

@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Dependencies**: Updated to npm packages `@keenmate/web-daterangepicker@^1.8.0` and `@keenmate/web-multiselect@^1.6.0` (from local file references)
+- **Dependencies**: Updated to npm packages `@keenmate/web-daterangepicker@^1.9.3` and `@keenmate/web-multiselect@^1.8.0`
 
 - **Docker build**: Added `.dockerignore` to exclude `node_modules`, `dist`, and build artifacts for faster builds
 
@@ -44,8 +44,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `--base-text-primary` → `--base-text-color-1` (headers, titles)
   - `--base-text-secondary` → `--base-text-color-3` (secondary content)
   - Added `--base-text-color-2` (body text) and `--base-text-color-4` (hints, placeholders)
-  - `--base-text-on-accent` kept as special case (auto-contrasted against accent)
+  - `--base-text-color-on-accent` kept as special case (auto-contrasted against accent)
   - web-multiselect: Added `--ms-text-color-1` through `--ms-text-color-4` with legacy aliases
+
+- **BREAKING: Background variable naming standardized to `bg`**
+  - `--base-hint-background` → `--base-hint-bg`
+  - `--base-actions-background` → `--base-actions-bg`
+  - `--base-popover-background` → `--base-popover-bg`
+  - `--base-badge-background-hover` → `--base-badge-bg-hover`
+  - `--base-input-background` → `--base-input-bg`
+  - `--base-input-background-disabled` → `--base-input-bg-disabled`
+  - `--base-dropdown-background` → `--base-dropdown-bg`
+  - `--base-tooltip-background` → `--base-tooltip-bg`
+
+- **BREAKING: Text on accent variable renamed for consistency**
+  - `--base-text-on-accent` → `--base-text-color-on-accent`
+
+- **Cascading mode export optimization**: In cascading mode, exports now only include:
+  - All `--base-*` variables (with any user overrides)
+  - Component-specific variables that CSS can't derive (5-9 vars per component)
+  - User-overridden component variables
+  - No longer exports redundant component variables that cascade from base (e.g., `--ms-accent-color: var(--base-accent-color)`)
+
+- **Import now supports `--base-*` variables**: Importing a theme properly locks and overrides both base and component variables
 
 - **web-multiselect `_css-variables.scss` updates**:
   - Color variables now use `var(--base-*, #{$scss-default})` fallback pattern

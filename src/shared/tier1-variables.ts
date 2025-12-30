@@ -28,26 +28,26 @@ export const TIER1_VARIABLES = [
   // Text colors
   'text-primary', // Main text color
   'text-secondary', // Muted/secondary text
-  'text-on-accent', // Text on accent backgrounds (contrasting)
+  'text-color-on-accent', // Text on accent backgrounds (contrasting)
 
   // Border
   'border-color', // Standard border color
 
   // Input field colors
-  'input-background', // Input field background
+  'input-bg', // Input field background
   'input-color', // Input text color
   'input-border-color-hover', // Input border on hover
   'input-border-color-focus', // Input border on focus
   'input-placeholder-color', // Placeholder text color
-  'input-background-disabled', // Disabled input background
+  'input-bg-disabled', // Disabled input background
 
   // Dropdown/popover colors
-  'dropdown-background', // Dropdown/popover background
+  'dropdown-bg', // Dropdown/popover background
   'dropdown-border', // Dropdown border (e.g., "1px solid #ccc")
   'dropdown-box-shadow', // Dropdown shadow
 
   // Tooltip colors
-  'tooltip-background', // Tooltip background
+  'tooltip-bg', // Tooltip background
   'tooltip-text-color', // Tooltip text
 ] as const;
 

@@ -43,7 +43,7 @@ export function generateDaterangepickerTheme(input: ThemeInput): Record<string, 
     '--drp-day-other-month-color': mix(textMuted, background, 50),
 
     // Loading overlay adapts to dark/light theme
-    '--drp-loading-overlay-background': isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)',
+    '--drp-loading-overlay-bg': isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)',
 
     // Shadow intensity varies by theme
     '--drp-shadow-xl': isDark

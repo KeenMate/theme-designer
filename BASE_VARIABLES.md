@@ -39,10 +39,10 @@ This enables:
 
 | Variable | Description | Example Value |
 |----------|-------------|---------------|
-| `--base-hint-background` | Floating hint background | `#1f2937` |
-| `--base-actions-background` | Dropdown actions area background | `#1f2937` |
-| `--base-popover-background` | Popover/modal background | `#1f2937` |
-| `--base-badge-background-hover` | Badge hover background | `#1f2937` |
+| `--base-hint-bg` | Floating hint background | `#1f2937` |
+| `--base-actions-bg` | Dropdown actions area background | `#1f2937` |
+| `--base-popover-bg` | Popover/modal background | `#1f2937` |
+| `--base-badge-bg-hover` | Badge hover background | `#1f2937` |
 
 ### Text Color Levels (FluentUI-style)
 
@@ -54,9 +54,9 @@ Text colors use a numbered level system inspired by Microsoft FluentUI. Lower nu
 | `--base-text-color-2` | Body text, labels | `mix(text, background, 85%)` | `#e5e7eb` |
 | `--base-text-color-3` | Secondary content, subtitles | `mix(text, background, 60%)` | `#9ca3af` |
 | `--base-text-color-4` | Hints, placeholders, captions | `mix(text, background, 40%)` | `#6b7280` |
-| `--base-text-on-accent` | Text on accent backgrounds | `contrast(accent)` auto-calculated | `#ffffff` |
+| `--base-text-color-on-accent` | Text on accent backgrounds | `contrast(accent)` auto-calculated | `#ffffff` |
 
-**Note:** `--base-text-on-accent` is a special variable that auto-calculates contrast against the accent color, not the background.
+**Note:** `--base-text-color-on-accent` is a special variable that auto-calculates contrast against the accent color, not the background.
 
 ### Border
 
@@ -69,19 +69,19 @@ Text colors use a numbered level system inspired by Microsoft FluentUI. Lower nu
 
 | Variable | Description | Example Value |
 |----------|-------------|---------------|
-| `--base-input-background` | Input background | `#1f2937` |
+| `--base-input-bg` | Input background | `#1f2937` |
 | `--base-input-color` | Input text color | `#f9fafb` |
 | `--base-input-border` | Input border (normal state) | `1px solid #374151` |
 | `--base-input-border-hover` | Input border on hover | `1px solid #4b5563` |
 | `--base-input-border-focus` | Input border when focused | `1px solid #3b82f6` |
 | `--base-input-placeholder-color` | Placeholder text color | `#9ca3af` |
-| `--base-input-background-disabled` | Disabled input background | `rgba(249, 250, 251, 0.05)` |
+| `--base-input-bg-disabled` | Disabled input background | `rgba(249, 250, 251, 0.05)` |
 
 ### Dropdown/Popover
 
 | Variable | Description | Example Value |
 |----------|-------------|---------------|
-| `--base-dropdown-background` | Dropdown panel background | `#1f2937` |
+| `--base-dropdown-bg` | Dropdown panel background | `#1f2937` |
 | `--base-dropdown-border` | Dropdown border | `1px solid #374151` |
 | `--base-dropdown-box-shadow` | Dropdown shadow | `0 8px 16px rgba(0, 0, 0, 0.6)` |
 
@@ -89,7 +89,7 @@ Text colors use a numbered level system inspired by Microsoft FluentUI. Lower nu
 
 | Variable | Description | Example Value |
 |----------|-------------|---------------|
-| `--base-tooltip-background` | Tooltip background | `#4b5563` |
+| `--base-tooltip-bg` | Tooltip background | `#4b5563` |
 | `--base-tooltip-text-color` | Tooltip text | `#f9fafb` |
 
 ### Typography - Font Family
