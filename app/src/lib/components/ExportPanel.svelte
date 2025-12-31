@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { cssOutput, jsonOutput, scssOutput, importFromString, resetOverrides, cascadingMode, selectedComponent } from '$lib/stores/theme';
-  import { COMPONENT_PREFIXES } from '@keenmate/theme-designer';
+  import { cssOutput, jsonOutput, scssOutput, importFromString, resetOverrides } from '$lib/stores/theme';
 
   type Format = 'css' | 'json' | 'scss';
   let activeTab: Format = $state('css');
@@ -8,9 +7,6 @@
   let showImport = $state(false);
   let importText = $state('');
   let importResult: { success: boolean; count: number } | null = $state(null);
-
-  // Get current component prefix for display
-  let componentPrefix = $derived(COMPONENT_PREFIXES[$selectedComponent]);
 
   const tabs: { id: Format; label: string }[] = [
     { id: 'css', label: 'CSS' },
@@ -98,7 +94,16 @@
       console.error('Failed to paste:', e);
     }
   }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      showImport = false;
+    }
+  }
 </script>
+
+<svelte:window onkeydown={showImport ? handleKeydown : undefined} />
 
 <div class="flex flex-col h-full space-y-3">
   <div class="flex justify-between items-center">
@@ -111,29 +116,6 @@
     >
       <i class="fa-solid fa-file-import"></i>
       Import
-    </button>
-  </div>
-
-  <!-- Cascading Mode Toggle -->
-  <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-    <div class="flex flex-col">
-      <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
-        Cascading Mode
-      </span>
-      <span class="text-[10px] text-gray-500 dark:text-gray-400">
-        {$cascadingMode ? 'Include --base-* layer' : `Only --${componentPrefix}-* vars`}
-      </span>
-    </div>
-    <button
-      type="button"
-      onclick={() => cascadingMode.update((v) => !v)}
-      class="relative w-10 h-5 rounded-full transition-colors {$cascadingMode ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}"
-      role="switch"
-      aria-checked={$cascadingMode}
-    >
-      <span
-        class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform {$cascadingMode ? 'translate-x-5' : 'translate-x-0'}"
-      ></span>
     </button>
   </div>
 
@@ -185,12 +167,11 @@
 
 <!-- Import Modal -->
 {#if showImport}
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     onclick={(e) => e.target === e.currentTarget && (showImport = false)}
-    onkeydown={(e) => e.key === 'Escape' && (showImport = false)}
     role="dialog"
-    tabindex="-1"
   >
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full max-h-[80vh] flex flex-col">
       <!-- Header -->

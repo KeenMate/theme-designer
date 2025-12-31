@@ -60,11 +60,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING: Text on accent variable renamed for consistency**
   - `--base-text-on-accent` → `--base-text-color-on-accent`
 
-- **Cascading mode export optimization**: In cascading mode, exports now only include:
-  - All `--base-*` variables (with any user overrides)
-  - Component-specific variables that CSS can't derive (5-9 vars per component)
-  - User-overridden component variables
-  - No longer exports redundant component variables that cascade from base (e.g., `--ms-accent-color: var(--base-accent-color)`)
+- **Simplified export behavior** (removed cascading mode toggle):
+  - Exports now always include all `--base-*` variables with resolved values
+  - Component variables (`--ms-*`, `--drp-*`) only exported when user explicitly overrides them
+  - Removed `cascadingMode` store and UI toggle - single unified export behavior
+  - No longer exports redundant component variables that cascade from base
 
 - **Import now supports `--base-*` variables**: Importing a theme properly locks and overrides both base and component variables
 
@@ -80,6 +80,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Hover/focus states use `--ms-input-border-hover` and `--ms-input-border-focus`
 
 ### Fixed
+
+- **Variable Groups Naming Mismatch** - Fixed 22+ variable names in `variableGroups.ts` that used `-background` suffix instead of `-bg` (e.g., `--ms-option-background-selected` → `--ms-option-bg-selected`). Variables now match actual CSS variable names from web-multiselect and web-daterangepicker.
+
+- **Dialog Escape Key Handling** - Import/Export dialogs now close when pressing Escape key, using `svelte:window` for reliable keyboard event capture regardless of focus state
 
 - **CSS Parser Comment Handling** - CSS parser now strips comments before parsing variables, preventing false matches from example syntax in documentation comments (e.g., `--ms-accent-color: #custom` in comments was being matched as a real variable)
 

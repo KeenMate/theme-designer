@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { cssOutput, jsonOutput, scssOutput, importFromString, resetOverrides, cascadingMode, selectedComponent } from '$lib/stores/theme';
-  import { COMPONENT_PREFIXES } from '@keenmate/theme-designer';
+  import { cssOutput, jsonOutput, scssOutput, importFromString, resetOverrides } from '$lib/stores/theme';
 
   interface Props {
     open: boolean;
@@ -23,9 +22,6 @@
   });
   let importText = $state('');
   let importResult: { success: boolean; count: number } | null = $state(null);
-
-  // Get current component prefix for display
-  let componentPrefix = $derived(COMPONENT_PREFIXES[$selectedComponent]);
 
   const tabs: { id: Format; label: string }[] = [
     { id: 'css', label: 'CSS' },
@@ -121,23 +117,20 @@
 
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
-      if (showImport) {
-        showImport = false;
-      } else {
-        onClose();
-      }
+      e.preventDefault();
+      onClose();
     }
   }
 </script>
 
+<svelte:window onkeydown={open ? handleKeydown : undefined} />
+
 {#if open}
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events a11y_interactive_supports_focus -->
   <div
     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     onclick={handleBackdropClick}
-    onkeydown={handleKeydown}
     role="dialog"
-    tabindex="-1"
   >
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
       <!-- Header -->
@@ -237,30 +230,6 @@
       {:else}
         <!-- Export Content -->
         <div class="p-4 space-y-4 flex-1 overflow-y-auto min-h-0 flex flex-col">
-          <!-- Cascading Mode Toggle -->
-          <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-            <div class="flex flex-col">
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Cascading Mode
-              </span>
-              <span class="text-xs text-gray-500 dark:text-gray-400">
-                {$cascadingMode ? 'Include --base-* layer' : `Only --${componentPrefix}-* vars`}
-              </span>
-            </div>
-            <button
-              type="button"
-              onclick={() => cascadingMode.update((v) => !v)}
-              class="relative w-11 h-6 rounded-full transition-colors {$cascadingMode ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}"
-              role="switch"
-              aria-checked={$cascadingMode}
-              aria-label="Toggle cascading mode"
-            >
-              <span
-                class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform {$cascadingMode ? 'translate-x-5' : 'translate-x-0'}"
-              ></span>
-            </button>
-          </div>
-
           <!-- Tabs -->
           <div class="flex border-b border-gray-200 dark:border-gray-700">
             {#each tabs as tab}

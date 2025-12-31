@@ -1,11 +1,8 @@
 import { writable, derived, get } from 'svelte/store';
 import {
   generateTheme,
-  generateFullTheme,
-  toCSS,
   toJSON,
   toSCSS,
-  toFullCSS,
   generateBaseTheme,
   COMPONENT_PREFIXES,
 } from '@keenmate/theme-designer';
@@ -37,9 +34,6 @@ export const colors = writable<ColorState>(defaultColors);
 
 // Selected component store
 export const selectedComponent = writable<ComponentType>('web-multiselect');
-
-// Export mode: cascading (with base layer) or standalone
-export const cascadingMode = writable<boolean>(false);
 
 // Calculated base theme (--base-* variables)
 export const baseTheme = derived(colors, ($colors) => generateBaseTheme($colors));
@@ -95,93 +89,80 @@ export const finalBaseTheme = derived(
   }
 );
 
-// Component-specific variables (no base equivalent) - from generator only
-export const componentSpecificVars = derived(
-  [colors, selectedComponent],
-  ([$colors, $component]) => generateTheme($component, $colors)
-);
-
-// Component variables to export in cascading mode:
-// - Component-specific vars from generator (no base equivalent)
-// - User-overridden component vars (locked)
-export const cascadingComponentVars = derived(
-  [componentSpecificVars, overrides, locked, selectedComponent],
-  ([$specific, $over, $locked, $component]) => {
+// Export formats - always exports base vars + user-overridden component vars only
+export const cssOutput = derived(
+  [finalBaseTheme, overrides, locked, selectedComponent, colors],
+  ([$finalBase, $over, $locked, $component, $colors]) => {
+    const importStatement = $colors.fontImport ? `${$colors.fontImport}\n\n` : '';
     const prefix = COMPONENT_PREFIXES[$component];
-    const result: Record<string, string> = { ...$specific };
 
-    // Add any user-overridden component vars
+    // Always export base vars
+    const baseProps = Object.entries($finalBase)
+      .map(([prop, value]) => `  ${prop}: ${value};`)
+      .join('\n');
+
+    // Only export component vars that user explicitly overrode
+    const componentOverrides: Record<string, string> = {};
     for (const key of $locked) {
       if (key.startsWith(`--${prefix}-`) && $over[key] !== undefined) {
-        result[key] = $over[key];
+        componentOverrides[key] = $over[key];
       }
     }
 
-    return result;
-  }
-);
-
-// Export formats derived from final theme and cascading mode
-export const cssOutput = derived(
-  [cascadingComponentVars, finalTheme, finalBaseTheme, cascadingMode, colors],
-  ([$cascadingComponent, $finalTheme, $finalBase, $cascading, $colors]) => {
-    // Build @import statement if fontImport is set
-    const importStatement = $colors.fontImport ? `${$colors.fontImport}\n\n` : '';
-
-    if ($cascading) {
-      // In cascading mode, export base layer + only component-specific vars
-      const baseProps = Object.entries($finalBase)
-        .map(([prop, value]) => `  ${prop}: ${value};`)
-        .join('\n');
-
-      // Only export component vars that don't have base equivalents or were overridden
-      const componentEntries = Object.entries($cascadingComponent);
-      if (componentEntries.length === 0) {
-        return `${importStatement}/* Base Layer */\n:root {\n${baseProps}\n}`;
-      }
-
-      const componentProps = componentEntries
-        .map(([prop, value]) => `  ${prop}: ${value};`)
-        .join('\n');
-      return `${importStatement}/* Base Layer */\n:root {\n${baseProps}\n}\n\n/* Component-specific overrides */\n:root {\n${componentProps}\n}`;
+    if (Object.keys(componentOverrides).length === 0) {
+      return `${importStatement}:root {\n${baseProps}\n}`;
     }
-    // Standalone mode: just the component variables with resolved values
-    return `${importStatement}${toCSS($finalTheme, ':root')}`;
+
+    const componentProps = Object.entries(componentOverrides)
+      .map(([prop, value]) => `  ${prop}: ${value};`)
+      .join('\n');
+
+    return `${importStatement}/* Base Theme */\n:root {\n${baseProps}\n}\n\n/* Component Overrides */\n:root {\n${componentProps}\n}`;
   }
 );
 
 export const jsonOutput = derived(
-  [cascadingComponentVars, finalTheme, finalBaseTheme, cascadingMode],
-  ([$cascadingComponent, $finalTheme, $finalBase, $cascading]) => {
-    if ($cascading) {
-      // In cascading mode, export structured object with base + component-specific vars only
-      const result: { base: Record<string, string>; component?: Record<string, string> } = {
-        base: $finalBase,
-      };
-      if (Object.keys($cascadingComponent).length > 0) {
-        result.component = $cascadingComponent;
+  [finalBaseTheme, overrides, locked, selectedComponent],
+  ([$finalBase, $over, $locked, $component]) => {
+    const prefix = COMPONENT_PREFIXES[$component];
+
+    // Collect user-overridden component vars
+    const componentOverrides: Record<string, string> = {};
+    for (const key of $locked) {
+      if (key.startsWith(`--${prefix}-`) && $over[key] !== undefined) {
+        componentOverrides[key] = $over[key];
       }
-      return JSON.stringify(result, null, 2);
     }
-    // Standalone mode: flat theme object
-    return toJSON($finalTheme, true);
+
+    if (Object.keys(componentOverrides).length === 0) {
+      return JSON.stringify({ base: $finalBase }, null, 2);
+    }
+
+    return JSON.stringify({ base: $finalBase, component: componentOverrides }, null, 2);
   }
 );
 
 export const scssOutput = derived(
-  [cascadingComponentVars, finalTheme, finalBaseTheme, cascadingMode],
-  ([$cascadingComponent, $finalTheme, $finalBase, $cascading]) => {
-    if ($cascading) {
-      // In cascading mode, export base + component-specific vars only
-      const baseMap = toSCSS($finalBase, '$base-theme');
-      if (Object.keys($cascadingComponent).length === 0) {
-        return baseMap;
+  [finalBaseTheme, overrides, locked, selectedComponent],
+  ([$finalBase, $over, $locked, $component]) => {
+    const prefix = COMPONENT_PREFIXES[$component];
+
+    // Collect user-overridden component vars
+    const componentOverrides: Record<string, string> = {};
+    for (const key of $locked) {
+      if (key.startsWith(`--${prefix}-`) && $over[key] !== undefined) {
+        componentOverrides[key] = $over[key];
       }
-      const componentMap = toSCSS($cascadingComponent, '$component-theme');
-      return `${baseMap}\n\n${componentMap}`;
     }
-    // Standalone mode: single theme map
-    return toSCSS($finalTheme, '$theme');
+
+    const baseMap = toSCSS($finalBase, '$base-theme');
+
+    if (Object.keys(componentOverrides).length === 0) {
+      return baseMap;
+    }
+
+    const componentMap = toSCSS(componentOverrides, '$component-overrides');
+    return `${baseMap}\n\n${componentMap}`;
   }
 );
 
