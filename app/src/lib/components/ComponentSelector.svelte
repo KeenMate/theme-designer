@@ -5,6 +5,7 @@
   const components: { id: ComponentType; name: string; available: boolean }[] = [
     { id: 'web-multiselect', name: 'Web Multiselect', available: true },
     { id: 'web-daterangepicker', name: 'Web Daterangepicker', available: true },
+    { id: 'web-grid', name: 'Web Grid', available: true },
   ];
 
   function selectComponent(component: ComponentType) {

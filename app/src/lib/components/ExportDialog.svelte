@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cssOutput, jsonOutput, scssOutput, importFromString, resetOverrides } from '$lib/stores/theme';
+  import { cssOutput, jsonOutput, scssOutput, importFromString, resetOverrides, exportMode, manifest, setExportMode, type ExportMode } from '$lib/stores/theme';
 
   interface Props {
     open: boolean;
@@ -230,6 +230,40 @@
       {:else}
         <!-- Export Content -->
         <div class="p-4 space-y-4 flex-1 overflow-y-auto min-h-0 flex flex-col">
+          <!-- Export Mode Toggle (only shown when manifest is available) -->
+          {#if $manifest}
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <div class="flex-1">
+                <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Base Variables</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                  {$exportMode === 'full'
+                    ? 'Exporting all base variables'
+                    : `Exporting only ${$manifest.baseVariables.length} variables used by ${$manifest.component}`}
+                </div>
+              </div>
+              <div class="flex gap-1 p-0.5 bg-gray-200 dark:bg-gray-700 rounded-lg">
+                <button
+                  type="button"
+                  onclick={() => setExportMode('full')}
+                  class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors {$exportMode === 'full'
+                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}"
+                >
+                  Full
+                </button>
+                <button
+                  type="button"
+                  onclick={() => setExportMode('subset')}
+                  class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors {$exportMode === 'subset'
+                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}"
+                >
+                  Component Only
+                </button>
+              </div>
+            </div>
+          {/if}
+
           <!-- Tabs -->
           <div class="flex border-b border-gray-200 dark:border-gray-700">
             {#each tabs as tab}

@@ -17,7 +17,7 @@ export interface ThemeInput {
 /**
  * Supported component types for theme generation
  */
-export type ComponentType = 'web-multiselect' | 'web-daterangepicker';
+export type ComponentType = 'web-multiselect' | 'web-daterangepicker' | 'web-grid';
 
 /**
  * RGB color representation
@@ -69,4 +69,44 @@ export interface ExportOptions {
   cascading?: boolean;
   /** Whether to include the base layer in output */
   includeBase?: boolean;
+}
+
+/**
+ * Component manifest describing base and component-specific CSS variables
+ */
+export interface ComponentManifest {
+  /** JSON schema reference (optional) */
+  $schema?: string;
+  /** Package name (e.g., '@keenmate/web-grid') */
+  component: string;
+  /** CSS variable prefix (e.g., 'wg' for --wg-*) */
+  prefix: string;
+  /** Base variables the component depends on */
+  baseVariables: BaseVariableDefinition[];
+  /** Component-specific CSS variables */
+  componentVariables: ComponentVariableDefinition[];
+}
+
+/**
+ * Definition of a base CSS variable used by a component
+ */
+export interface BaseVariableDefinition {
+  /** Variable name without '--' prefix (e.g., 'base-accent-color') */
+  name: string;
+  /** Whether this variable is required for theming */
+  required: boolean;
+  /** Human-readable description of how this variable is used */
+  usage: string;
+}
+
+/**
+ * Definition of a component-specific CSS variable
+ */
+export interface ComponentVariableDefinition {
+  /** Variable name without '--' prefix (e.g., 'wg-accent-color') */
+  name: string;
+  /** Category for UI grouping (e.g., 'accent', 'header', 'cell') */
+  category: string;
+  /** Human-readable description of what this variable controls */
+  usage: string;
 }

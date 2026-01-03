@@ -243,16 +243,17 @@
           ></web-daterangepicker>
         </div>
 
-        <!-- Disabled State -->
+        <!-- Disabled Weekends -->
         <div class="space-y-2">
           <h4 class="text-xs font-medium opacity-70" style="color: {textColor}">
-            Disabled State
+            Disabled Weekends
           </h4>
           <web-daterangepicker
             bind:this={disabledEl}
-            selection-mode="single"
-            placeholder="Disabled..."
-            disabled
+            selection-mode="range"
+            disabled-weekdays="0,6"
+            disabled-dates-handling="block"
+            placeholder="Weekends disabled..."
           ></web-daterangepicker>
         </div>
       </div>

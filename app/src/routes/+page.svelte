@@ -4,6 +4,7 @@
   import FontSelector from '$lib/components/FontSelector.svelte';
   import LivePreview from '$lib/components/LivePreview.svelte';
   import DaterangepickerPreview from '$lib/components/DaterangepickerPreview.svelte';
+  import WebGridPreview from '$lib/components/WebGridPreview.svelte';
   import VariableEditor from '$lib/components/VariableEditor.svelte';
   import ComponentSelector from '$lib/components/ComponentSelector.svelte';
   import { colors, updateColor, resetAll, selectedComponent } from '$lib/stores/theme';
@@ -77,8 +78,10 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 h-full overflow-y-auto">
       {#if $selectedComponent === 'web-multiselect'}
         <LivePreview />
-      {:else}
+      {:else if $selectedComponent === 'web-daterangepicker'}
         <DaterangepickerPreview />
+      {:else if $selectedComponent === 'web-grid'}
+        <WebGridPreview />
       {/if}
     </div>
   </div>

@@ -26,7 +26,8 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
   // ==========================================================================
 
   // Background variations
-  const bgHover = isDark ? lighten(background, 8) : darken(background, 5);
+  const elevatedBg = isDark ? lighten(background, 5) : darken(background, 3); // Headers, toolbars, secondary surfaces
+  const hoverBg = isDark ? lighten(background, 8) : darken(background, 5); // Hover states for any surface
 
   // Border color (derived from background)
   const border = isDark ? lighten(background, 15) : darken(background, 12);
@@ -44,8 +45,12 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
   const accentLight = isDark ? alpha(accent, 0.15) : alpha(accent, 0.1);
   const accentLightHover = isDark ? alpha(accent, 0.2) : alpha(accent, 0.15);
 
-  // Disabled colors
+  // Disabled/readonly colors
   const disabledBg = isDark ? alpha(text, 0.05) : alpha(text, 0.03);
+
+  // Danger/error colors
+  const dangerColor = '#dc2626'; // Red-600
+  const dangerBgLight = isDark ? alpha('#dc2626', 0.15) : alpha('#dc2626', 0.1);
 
   // Shadow
   const boxShadow = isDark
@@ -64,15 +69,10 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
     '--base-accent-color-light': accentLight,
     '--base-accent-color-light-hover': accentLightHover,
 
-    // Background colors
-    '--base-primary-bg': background,
-    '--base-primary-bg-hover': bgHover,
-
-    // Component-specific backgrounds (all default to main background)
-    '--base-hint-bg': background,
-    '--base-actions-bg': background,
-    '--base-popover-bg': background,
-    '--base-badge-bg-hover': background,
+    // Background colors (canonical set - no duplicates)
+    '--base-main-bg': background,
+    '--base-elevated-bg': elevatedBg,
+    '--base-hover-bg': hoverBg,
 
     // Text color levels (FluentUI-style hierarchy)
     '--base-text-color-1': textLevel1,
@@ -94,6 +94,9 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
     '--base-input-placeholder-color': textLevel4,
     '--base-input-bg-disabled': disabledBg,
 
+    // Disabled/readonly surfaces (distinct from elevated-bg)
+    '--base-disabled-bg': disabledBg,
+
     // Dropdown/popover colors
     '--base-dropdown-bg': background,
     '--base-dropdown-border': `1px solid ${border}`,
@@ -102,6 +105,10 @@ export function generateBaseTheme(input: ThemeInput): Record<string, string> {
     // Tooltip colors
     '--base-tooltip-bg': isDark ? lighten(background, 20) : '#333333',
     '--base-tooltip-text-color': isDark ? textLevel1 : '#ffffff',
+
+    // Danger/error colors
+    '--base-danger-color': dangerColor,
+    '--base-danger-bg-light': dangerBgLight,
 
     // Typography - Font Family
     '--base-font-family': input.fontFamily || 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',

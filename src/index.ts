@@ -7,7 +7,20 @@ import { generateBaseTheme, mapBaseToComponent } from './generators/base';
 // TYPES
 // =============================================================================
 
-export type { ThemeInput, ComponentType, ThemeGenerator, GeneratedTheme, ExportOptions, RGB, HSL } from './types';
+export type {
+  ThemeInput,
+  ComponentType,
+  ThemeGenerator,
+  GeneratedTheme,
+  ExportOptions,
+  RGB,
+  HSL,
+  ComponentManifest,
+  BaseVariableDefinition,
+  ComponentVariableDefinition,
+} from './types';
+
+import type { ComponentManifest } from './types';
 
 // =============================================================================
 // SHARED TIER 1 SPEC
@@ -30,10 +43,12 @@ export type { Tier1Variable, ComponentPrefix } from './shared/tier1-variables';
 
 /**
  * Map of component types to their theme generators
+ * Note: web-grid returns empty object as CSS handles all var() cascading
  */
 export const generators: Record<ComponentType, ThemeGenerator> = {
   'web-multiselect': generateMultiselectTheme,
   'web-daterangepicker': generateDaterangepickerTheme,
+  'web-grid': () => ({}),
 };
 
 /**
@@ -66,6 +81,62 @@ export function generateTheme(
     throw new Error(`Unknown component type: ${component}`);
   }
   return generator(input);
+}
+
+// =============================================================================
+// MANIFEST LOADING
+// =============================================================================
+
+/** Cache for loaded manifests */
+const manifestCache = new Map<ComponentType, ComponentManifest | null>();
+
+/**
+ * Load component manifest from npm package
+ *
+ * @param component - The component type to load manifest for
+ * @returns ComponentManifest or null if not available
+ *
+ * @example
+ * ```typescript
+ * const manifest = await loadManifest('web-grid');
+ * if (manifest) {
+ *   console.log('Required base vars:', manifest.baseVariables.filter(v => v.required));
+ *   console.log('Component vars:', manifest.componentVariables.length);
+ * }
+ * ```
+ */
+export async function loadManifest(component: ComponentType): Promise<ComponentManifest | null> {
+  // Check cache first
+  if (manifestCache.has(component)) {
+    return manifestCache.get(component) ?? null;
+  }
+
+  try {
+    // Dynamic import from npm package
+    // Vite handles JSON imports automatically in bundled code
+    const manifest = await import(`@keenmate/${component}/manifest`);
+    const result = (manifest.default ?? manifest) as ComponentManifest;
+    manifestCache.set(component, result);
+    return result;
+  } catch {
+    // Manifest not available for this component
+    manifestCache.set(component, null);
+    return null;
+  }
+}
+
+/**
+ * Clear manifest cache (useful for testing or reloading)
+ */
+export function clearManifestCache(): void {
+  manifestCache.clear();
+}
+
+/**
+ * Get component prefix from manifest or fallback
+ */
+export function getComponentPrefix(component: ComponentType): string {
+  return componentPrefixes[component];
 }
 
 // =============================================================================
@@ -221,6 +292,7 @@ export { generateBaseTheme, mapBaseToComponent, mapBaseToComponentResolved } fro
 const componentPrefixes: Record<ComponentType, string> = {
   'web-multiselect': 'ms',
   'web-daterangepicker': 'drp',
+  'web-grid': 'wg',
 };
 
 /**

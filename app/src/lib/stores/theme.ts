@@ -6,12 +6,28 @@ import {
   generateBaseTheme,
   COMPONENT_PREFIXES,
 } from '@keenmate/theme-designer';
-import type { ThemeInput, ComponentType, GeneratedTheme } from '@keenmate/theme-designer';
+import type { ThemeInput, ComponentType, GeneratedTheme, ComponentManifest } from '@keenmate/theme-designer';
 import { getComponentDefaultsObject } from '$lib/componentDefaults';
 import { resolveTheme, buildThemeContext } from '$lib/colorResolver';
 
+// Static imports for component manifests (JSON requires special handling)
+// @ts-ignore - JSON import
+import webGridManifest from '@keenmate/web-grid/manifest' with { type: 'json' };
+
+// Map of available manifests
+const manifests: Partial<Record<ComponentType, ComponentManifest>> = {
+  'web-grid': webGridManifest as ComponentManifest,
+};
+
+/**
+ * Load manifest for a component (synchronous, uses static imports)
+ */
+function getManifest(component: ComponentType): ComponentManifest | null {
+  return manifests[component] ?? null;
+}
+
 // All valid CSS variable prefixes we support
-const VALID_PREFIXES = ['--ms-', '--drp-', '--base-'];
+const VALID_PREFIXES = ['--ms-', '--drp-', '--wg-', '--base-'];
 
 export interface ColorState extends ThemeInput {
   background: string;
@@ -34,6 +50,25 @@ export const colors = writable<ColorState>(defaultColors);
 
 // Selected component store
 export const selectedComponent = writable<ComponentType>('web-multiselect');
+
+// Manifest store - loaded when component changes
+export const manifest = writable<ComponentManifest | null>(null);
+
+// Export mode: 'full' exports all base vars, 'subset' exports only component's base vars
+export type ExportMode = 'full' | 'subset';
+export const exportMode = writable<ExportMode>('full');
+
+// Load manifest when component changes (synchronous since we use static imports)
+selectedComponent.subscribe((component) => {
+  const loadedManifest = getManifest(component);
+  manifest.set(loadedManifest);
+});
+
+// Filtered base variables based on manifest (null = show all)
+export const filteredBaseVarNames = derived(manifest, ($manifest) => {
+  if (!$manifest) return null;
+  return new Set($manifest.baseVariables.map((v) => `--${v.name}`));
+});
 
 // Calculated base theme (--base-* variables)
 export const baseTheme = derived(colors, ($colors) => generateBaseTheme($colors));
@@ -89,15 +124,25 @@ export const finalBaseTheme = derived(
   }
 );
 
-// Export formats - always exports base vars + user-overridden component vars only
+// Export formats - exports base vars (full or subset) + user-overridden component vars
 export const cssOutput = derived(
-  [finalBaseTheme, overrides, locked, selectedComponent, colors],
-  ([$finalBase, $over, $locked, $component, $colors]) => {
+  [finalBaseTheme, overrides, locked, selectedComponent, colors, exportMode, filteredBaseVarNames],
+  ([$finalBase, $over, $locked, $component, $colors, $exportMode, $filteredVars]) => {
     const importStatement = $colors.fontImport ? `${$colors.fontImport}\n\n` : '';
     const prefix = COMPONENT_PREFIXES[$component];
 
-    // Always export base vars
-    const baseProps = Object.entries($finalBase)
+    // Filter base vars based on export mode
+    let baseVarsToExport = $finalBase;
+    if ($exportMode === 'subset' && $filteredVars) {
+      baseVarsToExport = {};
+      for (const [key, value] of Object.entries($finalBase)) {
+        if ($filteredVars.has(key)) {
+          baseVarsToExport[key] = value;
+        }
+      }
+    }
+
+    const baseProps = Object.entries(baseVarsToExport)
       .map(([prop, value]) => `  ${prop}: ${value};`)
       .join('\n');
 
@@ -122,9 +167,20 @@ export const cssOutput = derived(
 );
 
 export const jsonOutput = derived(
-  [finalBaseTheme, overrides, locked, selectedComponent],
-  ([$finalBase, $over, $locked, $component]) => {
+  [finalBaseTheme, overrides, locked, selectedComponent, exportMode, filteredBaseVarNames],
+  ([$finalBase, $over, $locked, $component, $exportMode, $filteredVars]) => {
     const prefix = COMPONENT_PREFIXES[$component];
+
+    // Filter base vars based on export mode
+    let baseVarsToExport = $finalBase;
+    if ($exportMode === 'subset' && $filteredVars) {
+      baseVarsToExport = {};
+      for (const [key, value] of Object.entries($finalBase)) {
+        if ($filteredVars.has(key)) {
+          baseVarsToExport[key] = value;
+        }
+      }
+    }
 
     // Collect user-overridden component vars
     const componentOverrides: Record<string, string> = {};
@@ -135,17 +191,28 @@ export const jsonOutput = derived(
     }
 
     if (Object.keys(componentOverrides).length === 0) {
-      return JSON.stringify({ base: $finalBase }, null, 2);
+      return JSON.stringify({ base: baseVarsToExport }, null, 2);
     }
 
-    return JSON.stringify({ base: $finalBase, component: componentOverrides }, null, 2);
+    return JSON.stringify({ base: baseVarsToExport, component: componentOverrides }, null, 2);
   }
 );
 
 export const scssOutput = derived(
-  [finalBaseTheme, overrides, locked, selectedComponent],
-  ([$finalBase, $over, $locked, $component]) => {
+  [finalBaseTheme, overrides, locked, selectedComponent, exportMode, filteredBaseVarNames],
+  ([$finalBase, $over, $locked, $component, $exportMode, $filteredVars]) => {
     const prefix = COMPONENT_PREFIXES[$component];
+
+    // Filter base vars based on export mode
+    let baseVarsToExport = $finalBase;
+    if ($exportMode === 'subset' && $filteredVars) {
+      baseVarsToExport = {};
+      for (const [key, value] of Object.entries($finalBase)) {
+        if ($filteredVars.has(key)) {
+          baseVarsToExport[key] = value;
+        }
+      }
+    }
 
     // Collect user-overridden component vars
     const componentOverrides: Record<string, string> = {};
@@ -155,7 +222,7 @@ export const scssOutput = derived(
       }
     }
 
-    const baseMap = toSCSS($finalBase, '$base-theme');
+    const baseMap = toSCSS(baseVarsToExport, '$base-theme');
 
     if (Object.keys(componentOverrides).length === 0) {
       return baseMap;
@@ -312,6 +379,13 @@ export function resetAll() {
   resetOverrides();
 }
 
+/**
+ * Set the export mode (full or subset)
+ */
+export function setExportMode(mode: ExportMode) {
+  exportMode.set(mode);
+}
+
 // ============================================================================
 // Import functions
 // ============================================================================
@@ -333,8 +407,8 @@ function hasValidPrefix(varName: string): boolean {
  */
 export function parseCSS(css: string): Record<string, string> {
   const variables: Record<string, string> = {};
-  // Match --ms-*, --drp-*, --base-* variables with their values
-  const regex = /(--(?:ms|drp|base)-[a-z0-9-]+)\s*:\s*([^;]+)/gi;
+  // Match --ms-*, --drp-*, --wg-*, --base-* variables with their values
+  const regex = /(--(?:ms|drp|wg|base)-[a-z0-9-]+)\s*:\s*([^;]+)/gi;
   let match;
   while ((match = regex.exec(css)) !== null) {
     const varName = match[1].trim();
@@ -396,8 +470,8 @@ export function parseJSON(json: string): Record<string, string> {
  */
 export function parseSCSS(scss: string): Record<string, string> {
   const variables: Record<string, string> = {};
-  // Match "--ms-*", "--drp-*", "--base-*": value patterns
-  const regex = /"(--(?:ms|drp|base)-[a-z0-9-]+)"\s*:\s*([^,\n)]+)/gi;
+  // Match "--ms-*", "--drp-*", "--wg-*", "--base-*": value patterns
+  const regex = /"(--(?:ms|drp|wg|base)-[a-z0-9-]+)"\s*:\s*([^,\n)]+)/gi;
   let match;
   while ((match = regex.exec(scss)) !== null) {
     const varName = match[1].trim();
@@ -424,7 +498,7 @@ export function autoParseTheme(input: string): Record<string, string> {
   // Try SCSS (contains $theme or map structure with any supported prefix)
   if (
     trimmed.includes('$') ||
-    (trimmed.includes('(') && (trimmed.includes('"--ms-') || trimmed.includes('"--drp-') || trimmed.includes('"--base-')))
+    (trimmed.includes('(') && (trimmed.includes('"--ms-') || trimmed.includes('"--drp-') || trimmed.includes('"--wg-') || trimmed.includes('"--base-')))
   ) {
     const result = parseSCSS(trimmed);
     if (Object.keys(result).length > 0) return result;
