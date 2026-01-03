@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **User Presets System**: Save, load, and manage custom theme presets
+  - "My Presets" section with localStorage persistence
+  - Auto-save: Presets automatically update when colors or fonts change
+  - Active preset ID persisted across page reloads
+  - Built-in preset browser dialog to copy presets to My Presets
+  - Save preset dialog with name/description input
+  - Import collision handling (overwrite/rename prompt)
+
+- **Theme State Persistence**: Current theme state (colors, overrides, locked variables, selected component) automatically saved to localStorage and restored on page reload
+
+- **Export Metadata**: Exported themes now include metadata header with preset name, timestamp, and base colors
+  - CSS/SCSS: Comment block header
+  - JSON: `_meta` object with name, generated timestamp, colors, and generator info
+
+- **Disabled/readonly background variable**: `--base-disabled-bg` - Subtle text-colored tint (`alpha(text, 3-5%)`) for disabled/readonly surfaces, distinct from `--base-elevated-bg` used for striped rows. Provides visual distinction between readonly cells and striped table rows.
+
 - **Input size height base variables**: `--base-input-size-xs-height` through `--base-input-size-xl-height` - Unitless multipliers for consistent input heights across components (3.1 to 4.1, multiplied by component's rem unit)
 
 - **Variable Reference legends**: Component-specific legend tables in Theme Designer app showing how base variables map to each component's UI elements (multiselect: badges, checkboxes, options; daterangepicker: day cells, calendar navigation)

@@ -11,9 +11,9 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
     "@keenmate/theme-designer": "file:../",
-    "@keenmate/web-daterangepicker": "file:../../web-daterangepicker",
-    "@keenmate/web-grid": "file:../../web-grid/packages/web-grid",
-    "@keenmate/web-multiselect": "file:../../web-multiselect"
+    "@keenmate/web-daterangepicker": "^1.9.5",
+    "@keenmate/web-grid": "^1.0.0-rc06",
+    "@keenmate/web-multiselect": "^1.8.2"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.0",

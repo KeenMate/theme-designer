@@ -105,16 +105,14 @@
     <select
       id="font-select"
       class="w-full px-3 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      value={isCustom ? 'custom' : currentFont}
       onchange={(e) => {
         const preset = fontPresets.find(p => p.value === e.currentTarget.value);
         if (preset) selectPreset(preset);
       }}
     >
       {#each fontPresets as preset}
-        <option
-          value={preset.value}
-          selected={preset.value === currentFont || (preset.value === 'custom' && isCustom)}
-        >
+        <option value={preset.value}>
           {preset.name}
         </option>
       {/each}

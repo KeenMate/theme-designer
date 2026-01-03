@@ -2,13 +2,17 @@
   import '../app.css';
   import { onMount } from 'svelte';
   import ExportDialog from '$lib/components/ExportDialog.svelte';
+  import { loadThemeState } from '$lib/stores/theme';
 
   let darkMode = $state(false);
   let showExportDialog = $state(false);
   let startWithImport = $state(false);
 
   onMount(() => {
-    // Check localStorage or system preference
+    // Load persisted theme state from localStorage
+    loadThemeState();
+
+    // Check localStorage or system preference for dark mode
     const stored = localStorage.getItem('darkMode');
     if (stored !== null) {
       darkMode = stored === 'true';

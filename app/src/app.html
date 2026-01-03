@@ -7,6 +7,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>Theme Designer - KeenMate</title>
+    <script>
+      // Apply dark mode immediately to prevent flash
+      (function() {
+        var stored = localStorage.getItem('darkMode');
+        var isDark = stored !== null ? stored === 'true' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (isDark) document.documentElement.classList.add('dark');
+      })();
+    </script>
     <script defer data-domain="theme-designer.keenmate.dev" src="https://stats.keenmate.services/js/plausible.js"></script>
     %sveltekit.head%
   </head>

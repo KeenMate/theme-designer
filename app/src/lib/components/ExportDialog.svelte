@@ -1,5 +1,7 @@
 <script lang="ts">
   import { cssOutput, jsonOutput, scssOutput, importFromString, resetOverrides, exportMode, manifest, setExportMode, type ExportMode } from '$lib/stores/theme';
+  import { saveCurrentAsPreset, checkNameCollision, updatePresetWithCurrentTheme, type UserPreset } from '$lib/stores/userPresets';
+  import ImportCollisionDialog from './ImportCollisionDialog.svelte';
 
   interface Props {
     open: boolean;
@@ -22,6 +24,13 @@
   });
   let importText = $state('');
   let importResult: { success: boolean; count: number } | null = $state(null);
+
+  // Import-to-preset flow
+  let showCollisionDialog = $state(false);
+  let importedPresetName = $state('');
+  let collidingPreset: UserPreset | null = $state(null);
+  let showNamePrompt = $state(false);
+  let promptName = $state('');
 
   const tabs: { id: Format; label: string }[] = [
     { id: 'css', label: 'CSS' },
@@ -69,22 +78,102 @@
     URL.revokeObjectURL(url);
   }
 
+  /**
+   * Extract preset name from imported content
+   * - CSS/SCSS: looks for "Theme: xxx" in comment header
+   * - JSON: looks for _meta.name
+   */
+  function extractPresetName(input: string): string | null {
+    const trimmed = input.trim();
+
+    // Try JSON first
+    if (trimmed.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed._meta?.name) {
+          return parsed._meta.name;
+        }
+      } catch {
+        // Not valid JSON, continue
+      }
+    }
+
+    // Try CSS/SCSS comment header
+    const themeMatch = trimmed.match(/\*\s*Theme:\s*(.+)/i);
+    if (themeMatch) {
+      return themeMatch[1].trim();
+    }
+
+    return null;
+  }
+
   function handleImport() {
     if (!importText.trim()) {
       importResult = { success: false, count: 0 };
       return;
     }
 
+    // Extract name before importing
+    const extractedName = extractPresetName(importText);
+
     const count = importFromString(importText);
     importResult = { success: count > 0, count };
 
     if (count > 0) {
+      // After successful import, save to My Presets
       setTimeout(() => {
-        importText = '';
-        showImport = false;
-        importResult = null;
-      }, 1500);
+        if (extractedName) {
+          // Check for collision
+          const existing = checkNameCollision(extractedName);
+          if (existing) {
+            // Show collision dialog
+            importedPresetName = extractedName;
+            collidingPreset = existing;
+            showCollisionDialog = true;
+          } else {
+            // Save directly
+            saveCurrentAsPreset(extractedName);
+            finishImport();
+          }
+        } else {
+          // No name in metadata, prompt for name
+          promptName = 'Imported Theme';
+          showNamePrompt = true;
+        }
+      }, 500);
     }
+  }
+
+  function handleCollisionOverwrite() {
+    if (collidingPreset) {
+      updatePresetWithCurrentTheme(collidingPreset.id);
+    }
+    showCollisionDialog = false;
+    collidingPreset = null;
+    finishImport();
+  }
+
+  function handleCollisionRename(newName: string) {
+    saveCurrentAsPreset(newName);
+    showCollisionDialog = false;
+    collidingPreset = null;
+    finishImport();
+  }
+
+  function handleNamePromptSave() {
+    if (promptName.trim()) {
+      saveCurrentAsPreset(promptName.trim());
+    }
+    showNamePrompt = false;
+    promptName = '';
+    finishImport();
+  }
+
+  function finishImport() {
+    importText = '';
+    showImport = false;
+    importResult = null;
+    onClose();
   }
 
   function handleFileUpload(e: Event) {
@@ -319,4 +408,70 @@
       {/if}
     </div>
   </div>
+
+  <!-- Collision Dialog -->
+  <ImportCollisionDialog
+    bind:open={showCollisionDialog}
+    existingName={importedPresetName}
+    onClose={() => { showCollisionDialog = false; collidingPreset = null; }}
+    onOverwrite={handleCollisionOverwrite}
+    onRename={handleCollisionRename}
+  />
+
+  <!-- Name Prompt Dialog (when no name in metadata) -->
+  {#if showNamePrompt}
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <div
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-[70]"
+      onclick={() => { showNamePrompt = false; finishImport(); }}
+      role="dialog"
+      aria-modal="true"
+    >
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden"
+        onclick={(e) => e.stopPropagation()}
+        role="document"
+      >
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            Save Imported Theme
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Enter a name for this preset
+          </p>
+        </div>
+
+        <div class="px-6 py-4">
+          <input
+            bind:value={promptName}
+            type="text"
+            placeholder="Preset name..."
+            class="w-full px-3 py-2 border rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700
+                   border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+
+        <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <button
+            type="button"
+            onclick={() => { showNamePrompt = false; finishImport(); }}
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700
+                   border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
+          >
+            Skip
+          </button>
+          <button
+            type="button"
+            onclick={handleNamePromptSave}
+            disabled={!promptName.trim()}
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
 {/if}
