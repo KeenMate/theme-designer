@@ -24,6 +24,8 @@ interface PersistedThemeState {
   overrides: Record<string, string>;
   locked: string[];
   selectedComponent: ComponentType;
+  componentOverrides?: Record<string, Record<string, string>>;
+  componentLocked?: Record<string, string[]>;
 }
 
 let hasLoadedThemeState = false;
@@ -33,11 +35,20 @@ function saveThemeState(): void {
   if (!hasLoadedThemeState) return;
 
   try {
+    // Convert componentLocked sets to arrays for JSON serialization
+    const compLocked = get(componentLocked);
+    const compLockedArrays: Record<string, string[]> = {};
+    for (const [comp, lockedSet] of Object.entries(compLocked)) {
+      compLockedArrays[comp] = Array.from(lockedSet);
+    }
+
     const state: PersistedThemeState = {
       colors: get(colors),
       overrides: get(overrides),
       locked: Array.from(get(locked)),
       selectedComponent: get(selectedComponent),
+      componentOverrides: get(componentOverrides),
+      componentLocked: compLockedArrays,
     };
     localStorage.setItem(THEME_STATE_KEY, JSON.stringify(state));
   } catch (e) {
@@ -69,6 +80,15 @@ export function loadThemeState(): void {
       if (state.overrides) overrides.set(state.overrides);
       if (state.locked) locked.set(new Set(state.locked));
       if (state.selectedComponent) selectedComponent.set(state.selectedComponent);
+      if (state.componentOverrides) componentOverrides.set(state.componentOverrides);
+      if (state.componentLocked) {
+        // Convert arrays back to sets
+        const compLockedSets: Record<string, Set<string>> = {};
+        for (const [comp, lockedArr] of Object.entries(state.componentLocked)) {
+          compLockedSets[comp] = new Set(lockedArr);
+        }
+        componentLocked.set(compLockedSets);
+      }
     }
   } catch (e) {
     console.warn('Failed to load theme state from localStorage:', e);
@@ -80,16 +100,22 @@ export function loadThemeState(): void {
 // Static imports for component manifests (JSON requires special handling)
 // @ts-ignore - JSON import
 import webGridManifest from '@keenmate/web-grid/manifest' with { type: 'json' };
+// @ts-ignore - JSON import
+import webMultiselectManifest from '@keenmate/web-multiselect/component-variables.manifest.json' with { type: 'json' };
+// @ts-ignore - JSON import
+import webDaterangepickerManifest from '@keenmate/web-daterangepicker/component-variables.manifest.json' with { type: 'json' };
 
-// Map of available manifests
-const manifests: Partial<Record<ComponentType, ComponentManifest>> = {
+// Map of available manifests (exported for use in variableGroups.ts)
+export const manifests: Record<ComponentType, ComponentManifest> = {
   'web-grid': webGridManifest as ComponentManifest,
+  'web-multiselect': webMultiselectManifest as ComponentManifest,
+  'web-daterangepicker': webDaterangepickerManifest as ComponentManifest,
 };
 
 /**
- * Load manifest for a component (synchronous, uses static imports)
+ * Get manifest for a component (synchronous, uses static imports)
  */
-function getManifest(component: ComponentType): ComponentManifest | null {
+export function getManifest(component: ComponentType): ComponentManifest | null {
   return manifests[component] ?? null;
 }
 
@@ -160,17 +186,41 @@ export const calculatedTheme = derived(
   }
 );
 
-// User overrides for individual variables
+// User overrides for individual variables (global)
 export const overrides = writable<Record<string, string>>({});
 
 // Set of locked variable names (won't be recalculated when base colors change)
 export const locked = writable<Set<string>>(new Set());
+
+// Component-specific overrides for base variables
+// Key is component name (e.g., "web-grid"), value is map of base variable overrides
+export const componentOverrides = writable<Record<string, Record<string, string>>>({});
+
+// Component-specific locked variables
+// Key is component name, value is set of locked variable names
+export const componentLocked = writable<Record<string, Set<string>>>({});
+
+// Effective locked set - merges global locks with component-scoped locks for current component
+export const effectiveLocked = derived(
+  [locked, componentLocked, selectedComponent],
+  ([$locked, $compLocked, $component]) => {
+    const result = new Set($locked);
+    if ($component && $compLocked[$component]) {
+      for (const varName of $compLocked[$component]) {
+        result.add(varName);
+      }
+    }
+    return result;
+  }
+);
 
 // Auto-save theme state to localStorage when stores change
 colors.subscribe(() => saveThemeState());
 overrides.subscribe(() => saveThemeState());
 locked.subscribe(() => saveThemeState());
 selectedComponent.subscribe(() => saveThemeState());
+componentOverrides.subscribe(() => saveThemeState());
+componentLocked.subscribe(() => saveThemeState());
 
 // Final theme merges calculated with locked overrides
 export const finalTheme = derived(
@@ -186,16 +236,29 @@ export const finalTheme = derived(
   }
 );
 
-// Final base theme merges calculated base with locked overrides
+// Final base theme merges calculated base with locked overrides (global + component-scoped)
 export const finalBaseTheme = derived(
-  [baseTheme, overrides, locked],
-  ([$base, $over, $locked]) => {
+  [baseTheme, overrides, locked, selectedComponent, componentOverrides, componentLocked],
+  ([$base, $over, $locked, $component, $compOver, $compLocked]) => {
     const result = { ...$base };
+
+    // Apply global locked overrides
     for (const key of $locked) {
       if (key.startsWith('--base-') && $over[key] !== undefined) {
         result[key] = $over[key];
       }
     }
+
+    // Apply component-scoped overrides for selected component
+    if ($component && $compOver[$component]) {
+      const compLockedSet = $compLocked[$component] ?? new Set();
+      for (const [key, value] of Object.entries($compOver[$component])) {
+        if (compLockedSet.has(key)) {
+          result[key] = value;
+        }
+      }
+    }
+
     return result;
   }
 );
@@ -217,10 +280,10 @@ function generateMetadataHeader(presetName: string | null, colors: ColorState, f
   return lines.join('\n');
 }
 
-// Export formats - exports base vars (full or subset) + user-overridden component vars
+// Export formats - exports base vars (full or subset) + user-overridden component vars + component-scoped base overrides
 export const cssOutput = derived(
-  [finalBaseTheme, overrides, locked, selectedComponent, colors, exportMode, filteredBaseVarNames, activePresetName],
-  ([$finalBase, $over, $locked, $component, $colors, $exportMode, $filteredVars, $presetName]) => {
+  [finalBaseTheme, overrides, locked, selectedComponent, colors, exportMode, filteredBaseVarNames, activePresetName, componentOverrides, componentLocked],
+  ([$finalBase, $over, $locked, $component, $colors, $exportMode, $filteredVars, $presetName, $compOverrides, $compLocked]) => {
     const metadata = generateMetadataHeader($presetName, $colors, 'css');
     const importStatement = $colors.fontImport ? `${$colors.fontImport}\n\n` : '';
     const prefix = COMPONENT_PREFIXES[$component];
@@ -240,23 +303,51 @@ export const cssOutput = derived(
       .map(([prop, value]) => `  ${prop}: ${value};`)
       .join('\n');
 
-    // Only export component vars that user explicitly overrode
-    const componentOverrides: Record<string, string> = {};
+    // Only export component vars that user explicitly overrode (global)
+    const globalComponentOverrides: Record<string, string> = {};
     for (const key of $locked) {
       if (key.startsWith(`--${prefix}-`) && $over[key] !== undefined) {
-        componentOverrides[key] = $over[key];
+        globalComponentOverrides[key] = $over[key];
       }
     }
 
-    if (Object.keys(componentOverrides).length === 0) {
-      return `${metadata}\n\n${importStatement}:root {\n${baseProps}\n}`;
+    let output = `${metadata}\n\n${importStatement}:root {\n${baseProps}\n}`;
+
+    // Add global component overrides if any
+    if (Object.keys(globalComponentOverrides).length > 0) {
+      const componentProps = Object.entries(globalComponentOverrides)
+        .map(([prop, value]) => `  ${prop}: ${value};`)
+        .join('\n');
+      output += `\n\n/* Component Overrides */\n:root {\n${componentProps}\n}`;
     }
 
-    const componentProps = Object.entries(componentOverrides)
-      .map(([prop, value]) => `  ${prop}: ${value};`)
-      .join('\n');
+    // Add component-scoped base variable overrides
+    const componentSelectors: Record<string, string> = {
+      'web-grid': 'web-grid',
+      'web-multiselect': 'web-multiselect, multi-select',
+      'web-daterangepicker': 'date-range-picker',
+    };
 
-    return `${metadata}\n\n${importStatement}/* Base Theme */\n:root {\n${baseProps}\n}\n\n/* Component Overrides */\n:root {\n${componentProps}\n}`;
+    for (const [comp, compOvers] of Object.entries($compOverrides)) {
+      const lockedSet = $compLocked[comp] ?? new Set();
+      const lockedOverrides: Record<string, string> = {};
+
+      for (const [varName, value] of Object.entries(compOvers)) {
+        if (lockedSet.has(varName)) {
+          lockedOverrides[varName] = value;
+        }
+      }
+
+      if (Object.keys(lockedOverrides).length > 0) {
+        const selector = componentSelectors[comp] ?? comp;
+        const props = Object.entries(lockedOverrides)
+          .map(([prop, value]) => `  ${prop}: ${value};`)
+          .join('\n');
+        output += `\n\n/* ${comp} Overrides */\n${selector} {\n${props}\n}`;
+      }
+    }
+
+    return output;
   }
 );
 
@@ -345,10 +436,11 @@ export const scssOutput = derived(
 export const theme = finalTheme;
 
 // Resolved theme for live preview - all var() and color-mix() resolved to actual values
+// Uses finalBaseTheme to include component-scoped base variable overrides
 export const resolvedTheme = derived(
-  [finalTheme, baseTheme, colors],
-  ([$finalTheme, $baseTheme, $colors]) => {
-    const context = buildThemeContext($baseTheme, $finalTheme);
+  [finalTheme, finalBaseTheme, colors],
+  ([$finalTheme, $finalBaseTheme, $colors]) => {
+    const context = buildThemeContext($finalBaseTheme, $finalTheme);
     return resolveTheme($finalTheme, context, $colors.background);
   }
 );
@@ -393,37 +485,98 @@ export function clearOverride(varName: string) {
 
 /**
  * Lock a variable so it won't be recalculated when base colors change
+ * For --base-* variables: if a component is selected, creates a component-scoped override
+ * For component variables (--ms-*, --wg-*, --drp-*): always uses global overrides
+ * @param varName - The CSS variable name to lock
+ * @param newValue - Optional value to set (if provided, uses this instead of current calculated value)
  */
-export function lockVariable(varName: string) {
+export function lockVariable(varName: string, newValue?: string) {
   // When locking, save the current calculated value as an override
   const currentTheme = get(calculatedTheme);
+  const currentBase = get(baseTheme);
   const currentOverrides = get(overrides);
+  const currentCompOverrides = get(componentOverrides);
+  const component = get(selectedComponent);
 
-  // Use existing override or current calculated value
-  const valueToLock = currentOverrides[varName] ?? currentTheme[varName];
+  // Check if this is a base variable and a component is selected
+  const isBaseVar = varName.startsWith('--base-');
 
-  if (valueToLock !== undefined) {
-    overrides.update((o) => ({ ...o, [varName]: valueToLock }));
+  if (isBaseVar && component) {
+    // Component-scoped base variable override
+    // Priority: newValue > current component override > current global override > calculated base
+    const valueToLock = newValue ?? currentCompOverrides[component]?.[varName] ?? currentOverrides[varName] ?? currentBase[varName];
+
+    if (valueToLock !== undefined) {
+      componentOverrides.update((co) => ({
+        ...co,
+        [component]: {
+          ...(co[component] ?? {}),
+          [varName]: valueToLock,
+        },
+      }));
+    }
+
+    componentLocked.update((cl) => {
+      const compSet = cl[component] ?? new Set();
+      const newCompSet = new Set(compSet);
+      newCompSet.add(varName);
+      return { ...cl, [component]: newCompSet };
+    });
+  } else {
+    // Global override (for component-specific vars or base vars with no component selected)
+    const valueToLock = newValue ?? currentOverrides[varName] ?? currentTheme[varName];
+
+    if (valueToLock !== undefined) {
+      overrides.update((o) => ({ ...o, [varName]: valueToLock }));
+    }
+
+    locked.update((l) => {
+      const newLocked = new Set(l);
+      newLocked.add(varName);
+      return newLocked;
+    });
   }
-
-  locked.update((l) => {
-    const newLocked = new Set(l);
-    newLocked.add(varName);
-    return newLocked;
-  });
 }
 
 /**
  * Unlock a variable so it will be recalculated when base colors change
+ * Checks both global and component-scoped locks
  */
 export function unlockVariable(varName: string) {
+  const component = get(selectedComponent);
+  const isBaseVar = varName.startsWith('--base-');
+
+  // Check if it's a component-scoped lock
+  if (isBaseVar && component) {
+    const compLocked = get(componentLocked);
+    if (compLocked[component]?.has(varName)) {
+      // Remove from component-scoped locks
+      componentLocked.update((cl) => {
+        const compSet = cl[component] ?? new Set();
+        const newCompSet = new Set(compSet);
+        newCompSet.delete(varName);
+        return { ...cl, [component]: newCompSet };
+      });
+
+      // Clear component-scoped override
+      componentOverrides.update((co) => {
+        if (!co[component]) return co;
+        const newCompOvers = { ...co[component] };
+        delete newCompOvers[varName];
+        return { ...co, [component]: newCompOvers };
+      });
+      return;
+    }
+  }
+
+  // Global unlock
   locked.update((l) => {
     const newLocked = new Set(l);
     newLocked.delete(varName);
     return newLocked;
   });
 
-  // Optionally clear the override when unlocking
+  // Clear the override when unlocking
   clearOverride(varName);
 }
 
@@ -431,8 +584,7 @@ export function unlockVariable(varName: string) {
  * Toggle lock state for a variable
  */
 export function toggleLock(varName: string) {
-  const currentLocked = get(locked);
-  if (currentLocked.has(varName)) {
+  if (isLocked(varName)) {
     unlockVariable(varName);
   } else {
     lockVariable(varName);
@@ -440,18 +592,50 @@ export function toggleLock(varName: string) {
 }
 
 /**
- * Check if a variable is locked
+ * Check if a variable is locked (globally or for current component)
  */
 export function isLocked(varName: string): boolean {
-  return get(locked).has(varName);
+  // Check global lock first
+  if (get(locked).has(varName)) return true;
+
+  // For base variables, also check component-scoped lock
+  if (varName.startsWith('--base-')) {
+    const component = get(selectedComponent);
+    if (component) {
+      const compLocked = get(componentLocked);
+      if (compLocked[component]?.has(varName)) return true;
+    }
+  }
+
+  return false;
 }
 
 /**
- * Reset all overrides and locks
+ * Get the scope of a locked variable: 'global', component name, or null if not locked
+ */
+export function getLockedScope(varName: string): string | null {
+  // Check global lock first
+  if (get(locked).has(varName)) return 'global';
+
+  // For base variables, check component-scoped locks
+  if (varName.startsWith('--base-')) {
+    const compLocked = get(componentLocked);
+    for (const [comp, lockedSet] of Object.entries(compLocked)) {
+      if (lockedSet.has(varName)) return comp;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Reset all overrides and locks (including component-scoped)
  */
 export function resetOverrides() {
   overrides.set({});
   locked.set(new Set());
+  componentOverrides.set({});
+  componentLocked.set({});
 }
 
 /**

@@ -10,10 +10,12 @@ import type { ComponentType } from '@keenmate/theme-designer';
 // These paths point to the installed npm packages
 import multiselectCSS from '@keenmate/web-multiselect/src/css/_variables.css?raw';
 import daterangepickerCSS from '@keenmate/web-daterangepicker/src/css/_variables.css?raw';
+import webGridCSS from '@keenmate/web-grid/src/css/_variables.css?raw';
 
 // Parse variables once at module load
 const multiselectDefaults = parseCSSVariables(multiselectCSS, '--ms-');
 const daterangepickerDefaults = parseCSSVariables(daterangepickerCSS, '--drp-');
+const webGridDefaults = parseCSSVariables(webGridCSS, '--wg-');
 
 /**
  * Get default CSS variable values for a component
@@ -25,6 +27,8 @@ export function getComponentDefaults(component: ComponentType): Map<string, stri
       return multiselectDefaults;
     case 'web-daterangepicker':
       return daterangepickerDefaults;
+    case 'web-grid':
+      return webGridDefaults;
     default:
       return new Map();
   }
@@ -47,4 +51,4 @@ export function hasComponentDefaults(component: ComponentType): boolean {
 }
 
 // Export parsed defaults for direct access
-export { multiselectDefaults, daterangepickerDefaults };
+export { multiselectDefaults, daterangepickerDefaults, webGridDefaults };

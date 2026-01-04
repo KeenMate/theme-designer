@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Variable Descriptions**: CSS variable tooltips now show descriptions from component manifests
+  - Hover over any variable name to see full variable name and usage description
+  - Tooltip follows cursor position for better UX
+  - Info icon (ℹ) appears on hover for variables with descriptions
+
+- **Modified Variables Filter**: Filter button in CSS Variables panel to show only modified/overridden variables
+  - Badge shows count of modified variables
+  - Empty state message when no variables are modified
+
+- **Manifest-based Variable Groups**: Variable groups now generated dynamically from component manifests
+  - Single source of truth - no more hardcoded variable lists
+  - Auto-syncs when components add/remove variables
+  - web-grid variables now display correctly (was showing multiselect groups)
+
 - **User Presets System**: Save, load, and manage custom theme presets
   - "My Presets" section with localStorage persistence
   - Auto-save: Presets automatically update when colors or fonts change
@@ -96,6 +110,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Hover/focus states use `--ms-input-border-hover` and `--ms-input-border-focus`
 
 ### Fixed
+
+- **Component-specific Base Variable Overrides**: Fixed multiple issues with overriding base variables per component
+  - Lock indicator now correctly shows locked state (was checking global locks instead of component-scoped)
+  - Color block updates when changing value via color picker
+  - Live preview updates when modifying base variables
+  - Base variable overrides are now scoped per-component (not shared globally)
 
 - **Variable Groups Naming Mismatch** - Fixed 22+ variable names in `variableGroups.ts` that used `-background` suffix instead of `-bg` (e.g., `--ms-option-background-selected` → `--ms-option-bg-selected`). Variables now match actual CSS variable names from web-multiselect and web-daterangepicker.
 

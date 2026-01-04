@@ -9,12 +9,33 @@
     calculatedValue: string;
     isLocked: boolean;
     themeContext: Record<string, string>;
+    description?: string | null;
     onToggleLock: () => void;
     onChange: (value: string) => void;
     onReset: () => void;
   }
 
-  let { varName, value, calculatedValue, isLocked, themeContext, onToggleLock, onChange, onReset }: Props = $props();
+  let { varName, value, calculatedValue, isLocked, themeContext, description, onToggleLock, onChange, onReset }: Props = $props();
+
+  // Tooltip state
+  let showTooltip = $state(false);
+  let mouseX = $state(0);
+  let mouseY = $state(0);
+
+  function handleMouseEnter() {
+    if (!description) return;
+    showTooltip = true;
+  }
+
+  function handleMouseMove(e: MouseEvent) {
+    if (!description) return;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  }
+
+  function handleMouseLeave() {
+    showTooltip = false;
+  }
 
   let inputValue = $state(value);
   let isValid = $state(true);
@@ -205,10 +226,16 @@
   <!-- Variable name -->
   <span
     class="text-xs font-mono truncate flex-1 min-w-0
-           {isModified ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-gray-600 dark:text-gray-400'}"
-    title={varName}
+           {isModified ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-gray-600 dark:text-gray-400'}
+           {description ? 'cursor-help' : ''}"
+    onmouseenter={handleMouseEnter}
+    onmousemove={handleMouseMove}
+    onmouseleave={handleMouseLeave}
   >
     {shortName}
+    {#if description}
+      <i class="fa-solid fa-circle-info text-[10px] ml-0.5 text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+    {/if}
   </span>
 
   <!-- Value input -->
@@ -287,3 +314,14 @@
     <i class="fa-solid fa-rotate-left"></i>
   </button>
 </div>
+
+<!-- Floating tooltip at cursor -->
+{#if showTooltip && description}
+  <div
+    class="fixed z-50 px-3 py-2 text-xs bg-gray-900 dark:bg-gray-700 text-white rounded-lg shadow-lg max-w-xs pointer-events-none"
+    style="left: {mouseX + 12}px; top: {mouseY + 12}px;"
+  >
+    <div class="font-mono text-blue-300 mb-1">{varName}</div>
+    <div class="text-gray-200">{description}</div>
+  </div>
+{/if}

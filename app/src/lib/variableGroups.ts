@@ -3,12 +3,72 @@
  * Organized by component section for easier navigation
  */
 
-import type { ComponentType } from '@keenmate/theme-designer';
+import type { ComponentType, ComponentManifest } from '@keenmate/theme-designer';
+import { getManifest } from '$lib/stores/theme';
 
 export interface VariableGroup {
   name: string;
   expanded: boolean;
   variables: string[];
+}
+
+// =============================================================================
+// MANIFEST-BASED GROUP GENERATION
+// =============================================================================
+
+/**
+ * Get variable description from manifest
+ * @param component - The component type
+ * @param varName - The CSS variable name (with -- prefix)
+ * @returns The usage description or null if not found
+ */
+export function getVariableDescription(component: ComponentType, varName: string): string | null {
+  const manifest = getManifest(component);
+  if (!manifest?.componentVariables) return null;
+
+  // Strip the -- prefix for matching
+  const name = varName.replace(/^--/, '');
+  const variable = manifest.componentVariables.find(v => v.name === name);
+  return variable?.usage ?? null;
+}
+
+/**
+ * Format a category slug to a display name
+ * e.g., "header" -> "Header", "context-menu" -> "Context Menu", "z-index" -> "Z-Index"
+ */
+function formatCategoryName(category: string): string {
+  return category
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Generate variable groups from a component manifest
+ * Groups componentVariables by their category field
+ */
+export function generateGroupsFromManifest(manifest: ComponentManifest): VariableGroup[] {
+  if (!manifest.componentVariables || manifest.componentVariables.length === 0) {
+    return [];
+  }
+
+  // Group variables by category, preserving insertion order
+  const categoryMap = new Map<string, string[]>();
+
+  for (const variable of manifest.componentVariables) {
+    const category = variable.category || 'other';
+    if (!categoryMap.has(category)) {
+      categoryMap.set(category, []);
+    }
+    categoryMap.get(category)!.push(`--${variable.name}`);
+  }
+
+  // Convert to VariableGroup array
+  return Array.from(categoryMap.entries()).map(([category, variables], i) => ({
+    name: formatCategoryName(category),
+    expanded: i === 0, // First group expanded by default
+    variables,
+  }));
 }
 
 // =============================================================================
@@ -449,15 +509,26 @@ export const daterangepickerGroups: VariableGroup[] = [
 
 /**
  * Get variable groups for a specific component
+ * Prefers manifest-based groups when available, falls back to hardcoded groups
  */
 export function getVariableGroups(component: ComponentType): VariableGroup[] {
+  // Try to generate groups from manifest first
+  const manifest = getManifest(component);
+  if (manifest) {
+    const manifestGroups = generateGroupsFromManifest(manifest);
+    if (manifestGroups.length > 0) {
+      return manifestGroups;
+    }
+  }
+
+  // Fall back to hardcoded groups
   switch (component) {
     case 'web-multiselect':
       return multiselectGroups;
     case 'web-daterangepicker':
       return daterangepickerGroups;
     default:
-      return multiselectGroups;
+      return [];
   }
 }
 

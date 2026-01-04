@@ -1,5 +1,5 @@
 import { writable, get } from 'svelte/store';
-import { colors, overrides, locked, setColors, resetOverrides, activePresetName } from './theme';
+import { colors, overrides, locked, setColors, resetOverrides, activePresetName, componentOverrides, componentLocked } from './theme';
 import type { ColorState } from './theme';
 
 // ============================================================================
@@ -12,6 +12,7 @@ export interface UserPreset {
   description?: string;
   colors: ColorState;
   overrides?: Record<string, string>;
+  componentOverrides?: Record<string, Record<string, string>>;
   createdAt: string;
   updatedAt: string;
 }
@@ -182,12 +183,32 @@ export function saveCurrentAsPreset(name: string, description?: string): UserPre
   const currentColors = get(colors);
   const currentOverrides = get(overrides);
   const currentLocked = get(locked);
+  const currentCompOverrides = get(componentOverrides);
+  const currentCompLocked = get(componentLocked);
 
-  // Only save overrides that are locked
+  // Only save global overrides that are locked
   const savedOverrides: Record<string, string> = {};
   for (const key of currentLocked) {
     if (currentOverrides[key] !== undefined) {
       savedOverrides[key] = currentOverrides[key];
+    }
+  }
+
+  // Only save component overrides that are locked
+  const savedCompOverrides: Record<string, Record<string, string>> = {};
+  for (const [comp, compOvers] of Object.entries(currentCompOverrides)) {
+    const lockedSet = currentCompLocked[comp];
+    if (!lockedSet) continue;
+
+    const compSavedOverrides: Record<string, string> = {};
+    for (const [varName, value] of Object.entries(compOvers)) {
+      if (lockedSet.has(varName)) {
+        compSavedOverrides[varName] = value;
+      }
+    }
+
+    if (Object.keys(compSavedOverrides).length > 0) {
+      savedCompOverrides[comp] = compSavedOverrides;
     }
   }
 
@@ -198,6 +219,7 @@ export function saveCurrentAsPreset(name: string, description?: string): UserPre
     description: description?.trim() || undefined,
     colors: { ...currentColors },
     overrides: Object.keys(savedOverrides).length > 0 ? savedOverrides : undefined,
+    componentOverrides: Object.keys(savedCompOverrides).length > 0 ? savedCompOverrides : undefined,
     createdAt: now(),
     updatedAt: now(),
   };
@@ -222,7 +244,7 @@ export function loadPreset(id: string): boolean {
   // Prevent auto-update while loading
   isLoadingPreset = true;
 
-  // Reset existing overrides
+  // Reset existing overrides (including component-scoped)
   resetOverrides();
 
   // Apply preset colors - explicitly include font properties to ensure they're set/cleared
@@ -234,7 +256,7 @@ export function loadPreset(id: string): boolean {
     fontImport: preset.colors.fontImport ?? undefined,
   });
 
-  // Apply preset overrides (lock them)
+  // Apply global preset overrides (lock them)
   if (preset.overrides) {
     for (const [varName, value] of Object.entries(preset.overrides)) {
       overrides.update(o => ({ ...o, [varName]: value }));
@@ -243,6 +265,25 @@ export function loadPreset(id: string): boolean {
         newLocked.add(varName);
         return newLocked;
       });
+    }
+  }
+
+  // Apply component-scoped preset overrides
+  if (preset.componentOverrides) {
+    for (const [comp, compOvers] of Object.entries(preset.componentOverrides)) {
+      componentOverrides.update(co => ({
+        ...co,
+        [comp]: { ...(co[comp] ?? {}), ...compOvers },
+      }));
+
+      for (const varName of Object.keys(compOvers)) {
+        componentLocked.update(cl => {
+          const compSet = cl[comp] ?? new Set();
+          const newCompSet = new Set(compSet);
+          newCompSet.add(varName);
+          return { ...cl, [comp]: newCompSet };
+        });
+      }
     }
   }
 
@@ -289,12 +330,32 @@ export function updatePresetWithCurrentTheme(id: string): boolean {
   const currentColors = get(colors);
   const currentOverrides = get(overrides);
   const currentLocked = get(locked);
+  const currentCompOverrides = get(componentOverrides);
+  const currentCompLocked = get(componentLocked);
 
-  // Only save overrides that are locked
+  // Only save global overrides that are locked
   const savedOverrides: Record<string, string> = {};
   for (const key of currentLocked) {
     if (currentOverrides[key] !== undefined) {
       savedOverrides[key] = currentOverrides[key];
+    }
+  }
+
+  // Only save component overrides that are locked
+  const savedCompOverrides: Record<string, Record<string, string>> = {};
+  for (const [comp, compOvers] of Object.entries(currentCompOverrides)) {
+    const lockedSet = currentCompLocked[comp];
+    if (!lockedSet) continue;
+
+    const compSavedOverrides: Record<string, string> = {};
+    for (const [varName, value] of Object.entries(compOvers)) {
+      if (lockedSet.has(varName)) {
+        compSavedOverrides[varName] = value;
+      }
+    }
+
+    if (Object.keys(compSavedOverrides).length > 0) {
+      savedCompOverrides[comp] = compSavedOverrides;
     }
   }
 
@@ -304,6 +365,7 @@ export function updatePresetWithCurrentTheme(id: string): boolean {
       ...updated[index],
       colors: { ...currentColors },
       overrides: Object.keys(savedOverrides).length > 0 ? savedOverrides : undefined,
+      componentOverrides: Object.keys(savedCompOverrides).length > 0 ? savedCompOverrides : undefined,
       updatedAt: now(),
     };
     return updated;
@@ -348,7 +410,8 @@ export function addBuiltInPreset(
   name: string,
   description: string,
   presetColors: ColorState,
-  presetOverrides?: Record<string, string>
+  presetOverrides?: Record<string, string>,
+  presetComponentOverrides?: Record<string, Record<string, string>>
 ): UserPreset {
   const preset: UserPreset = {
     id: generateId(),
@@ -356,6 +419,7 @@ export function addBuiltInPreset(
     description: description?.trim() || undefined,
     colors: { ...presetColors },
     overrides: presetOverrides ? { ...presetOverrides } : undefined,
+    componentOverrides: presetComponentOverrides ? { ...presetComponentOverrides } : undefined,
     createdAt: now(),
     updatedAt: now(),
   };
