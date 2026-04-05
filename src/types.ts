@@ -17,7 +17,7 @@ export interface ThemeInput {
 /**
  * Supported component types for theme generation
  */
-export type ComponentType = 'web-multiselect' | 'web-daterangepicker' | 'web-grid';
+export type ComponentType = 'web-multiselect' | 'web-daterangepicker' | 'web-treeview' | 'web-grid';
 
 /**
  * RGB color representation

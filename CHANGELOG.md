@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **web-treeview support** — Registered `web-treeview` (prefix `tv`) as a supported component
+  - New `generators/treeview.ts` generating `--tv-text-color-on-accent`, `--tv-loading-bg`, `--tv-context-menu-shadow`
+  - Added to `COMPONENT_PREFIXES` in `tier1-variables.ts` and `ComponentType` in `types.ts`
+  - Updated variable name regex patterns to include `tv` prefix
+
 - **Variable Descriptions**: CSS variable tooltips now show descriptions from component manifests
   - Hover over any variable name to see full variable name and usage description
   - Tooltip follows cursor position for better UX

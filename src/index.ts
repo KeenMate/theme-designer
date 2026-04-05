@@ -1,6 +1,7 @@
 import type { ThemeInput, ComponentType, ThemeGenerator, GeneratedTheme, ExportOptions } from './types';
 import { generateMultiselectTheme } from './generators/multiselect';
 import { generateDaterangepickerTheme } from './generators/daterangepicker';
+import { generateTreeviewTheme } from './generators/treeview';
 import { generateBaseTheme, mapBaseToComponent } from './generators/base';
 
 // =============================================================================
@@ -48,6 +49,7 @@ export type { Tier1Variable, ComponentPrefix } from './shared/tier1-variables';
 export const generators: Record<ComponentType, ThemeGenerator> = {
   'web-multiselect': generateMultiselectTheme,
   'web-daterangepicker': generateDaterangepickerTheme,
+  'web-treeview': generateTreeviewTheme,
   'web-grid': () => ({}),
 };
 
@@ -283,6 +285,7 @@ export {
 // Re-export generators for direct access
 export { generateMultiselectTheme } from './generators/multiselect';
 export { generateDaterangepickerTheme } from './generators/daterangepicker';
+export { generateTreeviewTheme } from './generators/treeview';
 export { generateBaseTheme, mapBaseToComponent, mapBaseToComponentResolved } from './generators/base';
 
 // =============================================================================
@@ -292,6 +295,7 @@ export { generateBaseTheme, mapBaseToComponent, mapBaseToComponentResolved } fro
 const componentPrefixes: Record<ComponentType, string> = {
   'web-multiselect': 'ms',
   'web-daterangepicker': 'drp',
+  'web-treeview': 'tv',
   'web-grid': 'wg',
 };
 

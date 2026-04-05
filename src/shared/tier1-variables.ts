@@ -59,6 +59,7 @@ export type Tier1Variable = (typeof TIER1_VARIABLES)[number];
 export const COMPONENT_PREFIXES = {
   'web-multiselect': 'ms',
   'web-daterangepicker': 'drp',
+  'web-treeview': 'tv',
 } as const;
 
 export type ComponentType = keyof typeof COMPONENT_PREFIXES;
@@ -87,7 +88,7 @@ export function getBaseVarName(variable: Tier1Variable): string {
  */
 export function isTier1Variable(varName: string): boolean {
   // Extract the suffix after the prefix (e.g., "--ms-accent-color" -> "accent-color")
-  const match = varName.match(/^--(?:ms|drp|base)-(.+)$/);
+  const match = varName.match(/^--(?:ms|drp|tv|base)-(.+)$/);
   if (!match) return false;
   return TIER1_VARIABLES.includes(match[1] as Tier1Variable);
 }
@@ -96,6 +97,6 @@ export function isTier1Variable(varName: string): boolean {
  * Extract the variable suffix from a full CSS variable name
  */
 export function extractVariableSuffix(varName: string): string | null {
-  const match = varName.match(/^--(?:ms|drp|base)-(.+)$/);
+  const match = varName.match(/^--(?:ms|drp|tv|base)-(.+)$/);
   return match ? match[1] : null;
 }
