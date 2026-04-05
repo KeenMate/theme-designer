@@ -369,6 +369,6 @@ make build
 make docker-deploy
 ```
 
-## License
+## License 
 
 MIT
